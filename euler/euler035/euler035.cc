@@ -13,9 +13,7 @@
 #include <stdio.h>
 #include <unordered_map>
 
-
 std::unordered_map<int, bool> primes;
-
 
 bool isPrime(int n) {
   bool result = true;
@@ -49,7 +47,6 @@ int rotate(int n) {
   return result;
 }
 
-
 bool isCircularPrime(int n) {
   bool result = true;
   int nOriginal = n;
@@ -58,16 +55,12 @@ bool isCircularPrime(int n) {
       result = false;
       break;
     } else {
-      printf("%d is prime\n", n);
     }
     n = rotate(n);
-    printf("Rotation: %d\n", n);
-    printf("Bool: %d, n1: %d, n2: %d\n", n != nOriginal, n, nOriginal);
   } while (n != nOriginal);
 
   return result;
 }
-
 
 int main() {
   int count = 0;

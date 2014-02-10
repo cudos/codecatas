@@ -16,18 +16,8 @@
 //
 #include <stdio.h>
 #include <map>
+#include "../prime.h"
 
-bool isPrime(int n) {
-  if (n < 2) return false;
-  if (n == 2 || n == 3) return true;
-  if (n % 2 == 0 || n % 3 == 0) return false;
-  for (int i = 5; i*i <= n; i += 6) {
-    if (n % i == 0 || n % (i + 2) == 0) {
-      return false;
-    }
-  }
-  return true;
-}
 
 bool isTruncatablePrime(int n) {
   int operand = 1;
@@ -38,12 +28,12 @@ bool isTruncatablePrime(int n) {
   }
   operand /= 10;
   while (operand >= 10) {
-    if (!isPrime(n % operand) || !isPrime(n / operand)) {
+    if (!utils::isPrime(n % operand) || !utils::isPrime(n / operand)) {
       return false;
     }
     operand /= 10;
   }
-  if (!isPrime(n)) {
+  if (!utils::isPrime(n)) {
     return false;
   }
   return true;

@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>recyclelist.h</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;MBrecyclelist.h - a doubly-linked list with node recycling</font><br>
+<font color="#0000ff">&nbsp;*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst (martin@martinbroadhurst.com) </font><br>
+<font color="#0000ff">&nbsp;*</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#ifndef RECYCLELIST_H</font><br>
+<font color="#a020f0">#define RECYCLELIST_H</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;mbcommon.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iterator.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;MBrlnode {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBrlnode * next;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBrlnode * previous;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;* data;<br>
+};<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBrlnode MBrlnode;<br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;MBrecyclelist {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBrlnode * head;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBrlnode * tail;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;count;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBrlnode * bin; <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;The recycle bin </font><font color="#0000ff">*/</font><br>
+};<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBrecyclelist MBrecyclelist;<br>
+<br>
+MBrecyclelist * MBrecyclelist_create(<font color="#2e8b57"><b>void</b></font>);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBrecyclelist_empty(MBrecyclelist * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBrecyclelist_delete(MBrecyclelist * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBrecyclelist_add_head(MBrecyclelist * list, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBrecyclelist_add_tail(MBrecyclelist * list, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBrecyclelist_insert_before(MBrecyclelist * list, MBrlnode * node, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBrecyclelist_insert_after(MBrecyclelist * list, MBrlnode * node, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBrecyclelist_remove_head(MBrecyclelist * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBrecyclelist_remove_tail(MBrecyclelist * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBrecyclelist_remove_node(MBrecyclelist * list, MBrlnode * node);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBrecyclelist_for_each(<font color="#2e8b57"><b>const</b></font>&nbsp;MBrecyclelist * list, MBforfn forfn);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBrecyclelist_get_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBrecyclelist * list);<br>
+MBiterator * MBrecyclelist_iterator(<font color="#2e8b57"><b>const</b></font>&nbsp;MBrecyclelist *list);<br>
+<br>
+<font color="#a020f0">#endif</font>&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;RECYCLELIST_H </font><font color="#0000ff">*/</font><br>
+</font></body>
+</html>

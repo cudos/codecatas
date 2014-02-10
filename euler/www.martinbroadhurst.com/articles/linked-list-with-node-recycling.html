@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Linked list with node recycling</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<p><a href="../index.html">Martin Broadhurst</a> &gt; <a href="../data-structures.html">Data Structures</a>
+<h1>Linked list with node recycling</h1>
+<h2>Contents</h2>
+<ul>
+<li><a href="linked-list-with-node-recycling.html#introduction">Introduction</a>
+<li><a href="linked-list-with-node-recycling.html#creation">Creation</a>
+<li><a href="linked-list-with-node-recycling.html#adding-elements">Adding elements</a>
+<li><a href="linked-list-with-node-recycling.html#removing-elements">Removing elements</a>
+<li><a href="linked-list-with-node-recycling.html#accessing-elements">Accessing elements</a>
+<li><a href="linked-list-with-node-recycling.html#example-program">Example program</a>
+<li><a href="linked-list-with-node-recycling.html#source-code">Source code</a>
+<li><a href="linked-list-with-node-recycling.html#download">Download</a>
+</ul>
+<a name="introduction"></a>
+<h2>Introduction</h2>
+<p>By recycling nodes deleted from a <a href="linked-list.html">linked list</a>, the number of allocations and deallocations of memory is reduced.
+<p>When an element is removed, its node is placed in the recycle bin:
+<p><font face="monospace" size="2">
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;MBrecyclelist_recycle_node(MBrecyclelist * list, MBrlnode * node)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;node-&gt;next = list-&gt;bin;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;list-&gt;bin = node;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;node-&gt;previous = <font color="#ff00ff">NULL</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;node-&gt;data = <font color="#ff00ff">NULL</font>;<br>
+}<br>
+</font>
+<p>When an element is added to the list, a node is retrieved from the recycle bin if the bin is not empty, or allocated otherwise:
+<p><font face="monospace" size="2">
+<font color="#2e8b57"><b>static</b></font>&nbsp;MBrlnode* MBrecyclelist_new_node(MBrecyclelist * list, <font color="#2e8b57"><b>void</b></font>&nbsp;* data)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBrlnode * node;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(list-&gt;bin == <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Recycle bin is empty </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;node = MBrlnode_create(data);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Retrieve the first node in the bin </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;node = list-&gt;bin;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;list-&gt;bin = list-&gt;bin-&gt;next; <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Which may be NULL </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;node-&gt;next = <font color="#ff00ff">NULL</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;node-&gt;data = data;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;node;<br>
+}<br>
+</font>
+<a name="creation"></a>
+<h2>Creation</h2>
+<p>Create a list with <span class="name">MBrecyclelist_create</span>.
+<a name="adding-elements"></a>
+<h2>Adding elements</h2>
+<p>Elements are added with <span class="name">MBrecyclelist_add_head</span>, <span class="name">MBrecyclelist_add_tail</span>, <span class="name">MBrecyclelist_insert_before</span>, and <span class="name">MBrecyclelist_insert_after</span>.
+<a name="removing-elements"></a>
+<h2>Removing elements</h2>
+<p>Elements are removed with <span class="name">MBrecyclelist_remove_head</span>, <span class="name">MBrecyclelist_remove_tail</span> and <span class="name">MBrecyclelist_remove</span>.
+<a name="accessing-elements"></a>
+<h2>Accessing elements</h2>
+<p>Iterate over the elements by following the nodes' <var>next</var> and <var>previous</var> pointers.
+The data elements are in the <var>data</var> field.
+<a name="example-program"></a>
+<h2>Example</h2>
+<p><font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;string.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;recyclelist.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBrecyclelist * list = MBrecyclelist_create();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;* elements[] = {<font color="#ff00ff">&quot;A&quot;</font>, <font color="#ff00ff">&quot;B&quot;</font>, <font color="#ff00ff">&quot;C&quot;</font>, <font color="#ff00ff">&quot;D&quot;</font>, <font color="#ff00ff">&quot;E&quot;</font>, <font color="#ff00ff">&quot;F&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(elements) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBrlnode * node;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;found = <font color="#ff00ff">0</font>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(i = <font color="#ff00ff">0</font>; i &lt; n; i++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBrecyclelist_add_tail(list, elements[i]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(node = list-&gt;head; node != <font color="#ff00ff">NULL</font>&nbsp;&amp;&amp; !found; node = node-&gt;next) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(strcmp((<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*)node-&gt;data, <font color="#ff00ff">&quot;C&quot;</font>) == <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBrecyclelist_insert_before(list, node, <font color="#ff00ff">&quot;X&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBrecyclelist_insert_after(list, node, <font color="#ff00ff">&quot;Y&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;found = <font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(node = list-&gt;head; node != <font color="#ff00ff">NULL</font>; node = node-&gt;next) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;</font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, (<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*)node-&gt;data);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(node = list-&gt;tail; node != <font color="#ff00ff">NULL</font>; node = node-&gt;previous) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;</font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, (<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*)node-&gt;data);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBrecyclelist_delete(list);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="source-code"></a>
+<h2>Source code</h2>
+<ul>
+<li><a href="../source/mbcommon.h.html">mbcommon.h</a>
+<li><a href="../source/iterator.h.html">iterator.h</a>
+<li><a href="../source/iterator.c.html">iterator.c</a>
+<li><a href="../source/recyclelist.h.html">recyclelist.h</a>
+<li><a href="../source/recyclelist.c.html">recyclelist.c</a>
+</ul>
+<a name="download"></a>
+<h2>Download</h2>
+<p>The following archives contain the full source code, example programs and build instructions for all of the <a href="../data-structures.html">data structures</a>:
+<ul>
+	<li><a href="../downloads/mbds.tar.gz">mbds.tar.gz</a> (27 KB, Linux)
+	<li><a href="../downloads/mbds.zip">mbds.zip</a> (55 KB, Windows)
+</ul>
+<h2>Links</h2>
+<ul>
+<li><a href="linked-list.html">Linked list</a>
+<li><a href="circular-linked-list.html">Circular linked list</a>
+<li><a href="sorting-a-linked-list-by-turning-it-into-a-binary-tree.html">Sorting a linked list by turning it into a binary tree</a>
+<li><a href="http://www.martinbroadhurst.com/articles/articles/doubly-linked-list-embedded-in-an-array.html">Doubly-linked list embedded in an array</a>
+<li><a href="http://www.martinbroadhurst.com/articles/articles/doubly-linked-list-embedded-in-an-array-with-compaction.html">Doubly-linked embedded in an array with compaction</a>
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="../index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

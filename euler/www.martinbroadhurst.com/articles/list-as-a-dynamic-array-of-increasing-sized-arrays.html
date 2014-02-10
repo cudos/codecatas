@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>List as a dynamic array of increasing-sized arrays</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<h1>List as a dynamic array of increasing-sized arrays</h1>
+<h2>Introduction</h2>
+<p>The most common <a href="../data-structures.html">data structures</a> used for lists are <a href="linked-list.html">linked lists</a> and <a href="dynamic-array.html">dynamic arrays</a>.
+<ul>
+	<li>Linked lists require following pointers for traversal (poor locality of reference), and have O(n) indexed access.
+	<br>Adding and removing elements require large numbers of small allocations and deallocations of memory.
+	<li>Dynamic arrays have efficient traversal (good locality of reference) and indexed access is O(1).
+	<br>Adding elements requires reallocation when full, however, which involves copying elements.
+</ul>
+<p>Instead, I am going to propose a structure consisting of a dynamic array of increasing-sized arrays.</p>
+<img src="blocklist.jpg">
+<p>Each array after the first two is twice the size of its predecessor.
+This means that the structure has the same allocation strategy as a dynamic array (double when full). 
+<p>As new arrays are appended to the end, no copying is required.
+<p>The regular increase in the size of the arrays makes indexed access efficient.
+<p>It is not efficient to insert elements anywhere other than at the tail in this design, since addition before the tail requires block shifts in the array to which the element is added, and all subsequent arrays.
+<h2>Creation and deletion</h2>
+<p>Create a list with <span class="name">MBblocklist_create</span>.
+<p>Delete with <span class="name">MBblocklist_delete</span>.
+<a name="adding-elements"></a>
+<h2>Adding elements</h2>
+<p>Add at the tail with <span class="name">MBblocklist_add_tail</span>.
+<a name="removing-elements"></a>
+<h2>Removing elements</h2>
+<p>Remove from the tail with <span class="name">MBblocklist_remove_tail</span>.
+<a name="accessing-elements"></a>
+<h2>Accessing elements</h2>
+<p>Access elements by array index using <span class="name">MBblocklist_get_at</span> and <span class="name">MBblocklist_set_at</span>. 
+<p>Iterate over all elements with <span class="name">MBblocklist_for_each</span>.
+Get an iterator over the elements with <span class="name">MBblocklist_iterator</span>.
+<a name="example-program"></a>
+<h2>Example program</h2>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;blocklist.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*elements[] = {<font color="#ff00ff">&quot;A&quot;</font>, <font color="#ff00ff">&quot;B&quot;</font>, <font color="#ff00ff">&quot;C&quot;</font>, <font color="#ff00ff">&quot;D&quot;</font>, <font color="#ff00ff">&quot;E&quot;</font>, <font color="#ff00ff">&quot;F&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(elements) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBblocklist * list;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;* data;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBiterator * iterator;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;list = MBblocklist_create();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(i = <font color="#ff00ff">0</font>; i &lt; n; i++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBblocklist_add_tail(list, elements[i]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data = MBblocklist_set_at(list, <font color="#ff00ff">2</font>, <font color="#ff00ff">&quot;X&quot;</font>); <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Change &quot;C&quot; to &quot;X&quot; </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Replaced </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, data);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;data = MBblocklist_remove_tail(list);&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Remove &quot;F&quot; </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Removed </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, data);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBblocklist_set_at(list, MBblocklist_get_count(list), <font color="#ff00ff">&quot;Y&quot;</font>); <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Same as MBblocklist_add_tail </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;List contains:</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">MBblocklist_for_each(list, (MBforfn)puts);</font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;iterator = MBblocklist_iterator(list);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;((data = MBiterator_get(iterator))) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;puts(data);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBiterator_delete(iterator);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBblocklist_delete(list);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<h2>Source code</h2>
+<ul>
+	<li><a href="../source/mbcommon.h.html">mbcommon.h</a>
+	<li><a href="../source/iterator.h.html">iterator.h</a>
+	<li><a href="../source/iterator.c.html">iterator.c</a>
+	<li><a href="../source/dynarray.h.html">dynarray.h</a>
+	<li><a href="../source/dynarray.c.html">dynarray.c</a>
+	<li><a href="../source/blocklist.h.html">blocklist.h</a>
+	<li><a href="../source/blocklist.c.html">blocklist.c</a>
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="../index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

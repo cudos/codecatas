@@ -1,0 +1,211 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>putclient.cpp</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;string&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iostream&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;vector&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;queue&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;cstdio&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;sys/types.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;dirent.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;sys/stat.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&quot;httpclient.h&quot;</font><br>
+<br>
+<font color="#a020f0">#define BUF_SIZE </font><font color="#ff00ff">4096</font><br>
+<br>
+<font color="#2e8b57"><b>class</b></font>&nbsp;MyPutRequester : <font color="#804040"><b>public</b></font>&nbsp;Pipelined::HttpRequester<br>
+{<br>
+<font color="#804040"><b>public</b></font>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MyPutRequester(<font color="#2e8b57"><b>const</b></font>&nbsp;std::string&amp; directory)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: directory_(directory), buf_(<font color="#ff00ff">NULL</font>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>virtual</b></font>&nbsp;~MyPutRequester()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>delete</b></font>[] buf_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>virtual</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;Run(Pipelined::HttpClient *client);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>virtual</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;HandleResponse(<font color="#2e8b57"><b>const</b></font>&nbsp;std::string&amp; request, <font color="#2e8b57"><b>const</b></font>&nbsp;Pipelined::HttpStatus&amp; status,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;std::multimap&lt;std::string, std::string&gt;&amp; headers, Pipelined::Stream* body);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>virtual</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;HandleFinish(std::queue&lt;std::string&gt;&amp; requests);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>ssize_t</b></font>&nbsp;GetFileSize(<font color="#2e8b57"><b>FILE</b></font>&nbsp;*fptr) <font color="#2e8b57"><b>const</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;SendFile(<font color="#2e8b57"><b>FILE</b></font>&nbsp;*fptr, Pipelined::HttpClient* client) <font color="#2e8b57"><b>const</b></font>;<br>
+<font color="#804040"><b>private</b></font>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;std::string&amp; directory_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>* buf_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::queue&lt;std::string&gt; files_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;std::string&gt; failed_;<br>
+};<br>
+<br>
+<font color="#0000ff">// The override to do the PUTs</font><br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MyPutRequester::Run(Pipelined::HttpClient *client)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Build up a queue of files</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>DIR</b></font>* dir = opendir(directory_.c_str());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(dir != <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;dirent* ent;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;((ent = readdir(dir))) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string name = ent-&gt;d_name;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(name[<font color="#ff00ff">0</font>] != <font color="#ff00ff">'.'</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name = directory_ + <font color="#ff00ff">'/'</font>&nbsp;+ name;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;stat statbuf;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;result = stat(name.c_str(), &amp;statbuf);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(buf_ == <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(statbuf.st_blksize != -<font color="#ff00ff">1</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Use the optimum buffer size</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf_ = <font color="#804040"><b>new</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>[statbuf.st_blksize];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr &lt;&lt; <font color="#ff00ff">&quot;Couldn't get block size&quot;</font>&nbsp;&lt;&lt; <font color="#ff00ff">&quot;std::endl&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf_ = <font color="#804040"><b>new</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>[BUF_SIZE];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(result == <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(S_ISREG(statbuf.st_mode)) { <font color="#0000ff">// Regular files only</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;files_.push(name);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr &lt;&lt; <font color="#ff00ff">&quot;Couldn't stat file &quot;</font>&nbsp;&lt;&lt; name &lt;&lt; std::endl;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;closedir(dir);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Send them</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(!files_.empty()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string name = files_.front();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>FILE</b></font>&nbsp;*fptr = fopen(name.c_str(), <font color="#ff00ff">&quot;r&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(fptr != <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string uri(<font color="#ff00ff">&quot;/cgi-bin/put/&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;uri += name;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client-&gt;StartRequest(<font color="#ff00ff">&quot;PUT&quot;</font>, uri);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client-&gt;SendHeader(<font color="#ff00ff">&quot;Content-Length&quot;</font>, GetFileSize(fptr));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client-&gt;EndHeaders();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SendFile(fptr, client);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fclose(fptr);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr &lt;&lt; <font color="#ff00ff">&quot;Couldn't open file &quot;</font>&nbsp;&lt;&lt; name &lt;&lt; std::endl;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;files_.pop();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr &lt;&lt; <font color="#ff00ff">&quot;Couldn't open directory &quot;</font>&nbsp;&lt;&lt; directory_ &lt;&lt; std::endl;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#0000ff">// The override to handle responses</font><br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MyPutRequester::HandleResponse(<font color="#2e8b57"><b>const</b></font>&nbsp;std::string&amp; request, <font color="#2e8b57"><b>const</b></font>&nbsp;Pipelined::HttpStatus&amp; status,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;std::multimap&lt;std::string, std::string&gt;&amp; headers, Pipelined::Stream* body)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Request</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; request &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Status line</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; status.version &lt;&lt; <font color="#ff00ff">&quot; &quot;</font>&nbsp;&lt;&lt; status.code &lt;&lt; <font color="#ff00ff">&quot; &quot;</font>&nbsp;&lt;&lt; status.message &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Headers</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(std::multimap&lt;std::string, std::string&gt;::const_iterator it = headers.begin(); it != headers.end(); ++it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; it-&gt;first &lt;&lt; <font color="#ff00ff">&quot;: &quot;</font>&nbsp;&lt;&lt; it-&gt;second &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Read the entity body</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;buf[BUF_SIZE];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(!body-&gt;Eof()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;bytes_read = body-&gt;Read(buf, BUF_SIZE);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(bytes_read &gt; <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;</font><font color="#6a5acd">%.*s</font><font color="#ff00ff">&quot;</font>, bytes_read, buf);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>&nbsp;&lt;&lt; std::endl;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// If the request didn't succeed, add it to the failed vector</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(status.code &gt; <font color="#ff00ff">299</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;failed_.push_back(request);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#0000ff">// The override for finishing</font><br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MyPutRequester::HandleFinish(std::queue&lt;std::string&gt;&amp; requests)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Requests that did not get a reply</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!requests.empty()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;The following requests did not receive a reply:</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(!requests.empty()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; requests.front() &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requests.pop();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Requests that failed</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!failed_.empty()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;The following requests failed:</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(std::vector&lt;std::string&gt;::const_iterator it = failed_.begin();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it != failed_.end(); ++it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; *it &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Files that were not sent</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!files_.empty()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;The following files were not sent:</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(!files_.empty()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; files_.front() &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;files_.pop();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#0000ff">// Helper to find the size of an open file</font><br>
+<font color="#2e8b57"><b>ssize_t</b></font>&nbsp;MyPutRequester::GetFileSize(<font color="#2e8b57"><b>FILE</b></font>&nbsp;*fptr) <font color="#2e8b57"><b>const</b></font><br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>ssize_t</b></font>&nbsp;length;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fseek(fptr, <font color="#ff00ff">0L</font>, <font color="#ff00ff">SEEK_END</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;length = ftell(fptr);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;fseek(fptr, <font color="#ff00ff">0L</font>, <font color="#ff00ff">SEEK_SET</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;length;<br>
+}<br>
+<br>
+<font color="#0000ff">// Helper to send the file</font><br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MyPutRequester::SendFile(<font color="#2e8b57"><b>FILE</b></font>&nbsp;*fptr, Pipelined::HttpClient* client) <font color="#2e8b57"><b>const</b></font><br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;bytes_read;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;((bytes_read = fread(buf_, <font color="#ff00ff">1</font>, BUF_SIZE, fptr))) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;bytes_sent = <font color="#ff00ff">0</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(bytes_sent &lt; bytes_read) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;sent = client-&gt;Write(buf_ + bytes_sent, bytes_read - bytes_sent);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(bytes_sent &gt;= <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bytes_sent += sent;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>int</b></font>&nbsp;argc, <font color="#2e8b57"><b>char</b></font>&nbsp;**argv)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string directory;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(argc &gt; <font color="#ff00ff">1</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;directory = argv[<font color="#ff00ff">1</font>];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;directory = <font color="#ff00ff">&quot;.&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>try</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MyPutRequester requester(directory);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pipelined::HttpClient client(<font color="#ff00ff">&quot;localhost&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client.Run(&amp;requester);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>catch</b></font>&nbsp;(std::exception&amp; ex) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr &lt;&lt; <font color="#ff00ff">&quot;Exception: &quot;</font>&nbsp;&lt;&lt; ex.what() &lt;&lt; std::endl; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font></body>
+</html>

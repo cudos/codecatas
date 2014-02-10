@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" >
+<channel>
+<title>Project Euler</title>
+<atom:link href="http://projecteuler.net/rss2_euler.xml" rel="self" type="application/rss+xml" /><link>http://projecteuler.net</link>
+<description>A website dedicated to the fascinating world of mathematics and programming.</description>
+<language>en</language>
+<copyright>projecteuler.net</copyright>
+<webMaster>noreply@projecteuler.net (Colin Hughes)</webMaster>
+<lastBuildDate>Fri, 03 Jan 2014 09:03:43 GMT</lastBuildDate>
+<ttl>60</ttl>
+<item>
+<title>Problem 453</title>
+<link>http://projecteuler.net/problem=453</link>
+<description>Release date: Sat, 04 Jan 2014 16:00:00 [Server Time]</description>
+<guid isPermaLink="false">problem_id_453</guid>
+</item>
+<item>
+<title>Problem 452</title>
+<link>http://projecteuler.net/problem=452</link>
+<description>Release date: Sat, 28 Dec 2013 13:00:00 [Server Time]</description>
+<guid isPermaLink="false">problem_id_452</guid>
+</item>
+<item>
+<title>Problem 451</title>
+<link>http://projecteuler.net/problem=451</link>
+<description>Release date: Sun, 22 Dec 2013 10:00:00 [Server Time]</description>
+<guid isPermaLink="false">problem_id_451</guid>
+</item>
+<item>
+<title>Problem 450</title>
+<link>http://projecteuler.net/problem=450</link>
+<description>Release date: Sun, 15 Dec 2013 07:00:00 [Server Time]</description>
+<guid isPermaLink="false">problem_id_450</guid>
+</item>
+<item>
+<title>Problem 449</title>
+<link>http://projecteuler.net/problem=449</link>
+<description>Release date: Sun, 08 Dec 2013 04:00:00 [Server Time]</description>
+<guid isPermaLink="false">problem_id_449</guid>
+</item>
+<item>
+<title>Publication of all problems shifted one week ahead</title>
+<link>http://projecteuler.net/news</link>
+<description><![CDATA[ <p><p>
+The entire publication scheme has been shifted one week ahead.
+</p></p> ]]>
+(Monday 02 December 2013: Publication of all problems shifted one week ahead)</description>
+<pubDate>Mon, 02 Dec 2013 00:00:00 UTC</pubDate>
+<guid isPermaLink="false">news_id_57</guid>
+</item>
+<item>
+<title>Problem 449 Postponed</title>
+<link>http://projecteuler.net/news</link>
+<description><![CDATA[ <p><p>Due to our hosts performing a complete physical relocation of their equipment to a new datacentre taking longer than expected the release of problem 449 has been postponed for this week.</p>
+<p>I am very sorry for the extended downtime, the long delay in finally being able to make this announcement, and the absence of a new problem this weekend. When a decision has been made by the team more information will follow on the new release schedule.</p></p> ]]>
+(Sunday 01 December 2013: Problem 449 Postponed)</description>
+<pubDate>Sun, 01 Dec 2013 00:00:00 UTC</pubDate>
+<guid isPermaLink="false">news_id_56</guid>
+</item>
+<item>
+<title>Project Euler Outage</title>
+<link>http://projecteuler.net/news</link>
+<description><![CDATA[ <p><p>Apologies for the short notice, but our hosts are performing a physical relocation of their datacentre on 1 December at 1am (UK time). During this period of time Project Euler will not be accessible. They assure us that the operation has been meticulously planned and it should be completed within two hours, which means that the website should be fully operational at, or before, 3am (UK time).</p>
+<p>If the website appears to be operating normally between 1am and 3am then it is quite possible that the move has been completed successfully. However, we would advise members to be aware that the integrity of your data (completing problems, updating profiles, and so on) cannot be guaranteed, so we would recommend that members restrict access to browsing the site until 3am (UK time).</p>
+<p>Problem 449 is scheduled for release at 4am (UK time) and currently we intend to stick to that schedule.</p></p> ]]>
+(Saturday 30 November 2013: Project Euler Outage)</description>
+<pubDate>Sat, 30 Nov 2013 00:00:00 UTC</pubDate>
+<guid isPermaLink="false">news_id_55</guid>
+</item>
+<item>
+<title>Problem 448</title>
+<link>http://projecteuler.net/problem=448</link>
+<description>Release date: Sun, 24 Nov 2013 01:00:00 [Server Time]</description>
+<guid isPermaLink="false">problem_id_448</guid>
+</item>
+<item>
+<title>Problem 447</title>
+<link>http://projecteuler.net/problem=447</link>
+<description>Release date: Sat, 16 Nov 2013 22:00:00 [Server Time]</description>
+<guid isPermaLink="false">problem_id_447</guid>
+</item>
+</channel>
+</rss>

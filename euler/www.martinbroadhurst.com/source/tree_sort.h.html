@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>tree_sort.h</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#a020f0">#ifndef TREE_SORT_H</font><br>
+<font color="#a020f0">#define TREE_SORT_H</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;algorithm&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;RandomAccessIterator&gt;<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;tree_sort(RandomAccessIterator first, RandomAccessIterator last);<br>
+<br>
+<font color="#2e8b57"><b>namespace</b></font><br>
+{<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;RandomAccessIterator&gt;<br>
+<font color="#2e8b57"><b>class</b></font>&nbsp;treenode<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>friend</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;tree_sort&lt;RandomAccessIterator&gt;(RandomAccessIterator, RandomAccessIterator);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>typename</b></font>&nbsp;std::iterator_traits&lt;RandomAccessIterator&gt;::value_type T;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;treenode(<font color="#2e8b57"><b>const</b></font>&nbsp;T&amp; value)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: value_(value), left_(<font color="#ff00ff">NULL</font>), right_(<font color="#ff00ff">NULL</font>)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>static</b></font>&nbsp;treenode&lt;RandomAccessIterator&gt;* build(RandomAccessIterator first, RandomAccessIterator last)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;treenode&lt;RandomAccessIterator&gt;* root = <font color="#ff00ff">NULL</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(RandomAccessIterator it = first; it &lt; last; ++it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;treenode&lt;RandomAccessIterator&gt;* node = <font color="#804040"><b>new</b></font>&nbsp;treenode&lt;RandomAccessIterator&gt;(*it);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(root == <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root = node;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;treenode&lt;RandomAccessIterator&gt;* current = root,* previous = <font color="#ff00ff">NULL</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>bool</b></font>&nbsp;less;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(current != <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;less = node-&gt;value_ &lt; current-&gt;value_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;previous = current;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;current = less ? current-&gt;left_ : current-&gt;right_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(less) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;previous-&gt;left_ = node;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;previous-&gt;right_ = node;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;root;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;write(RandomAccessIterator* it) <font color="#2e8b57"><b>const</b></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(left_) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;left_-&gt;write(it);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**it = value_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++(*it);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(right_) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;right_-&gt;write(it);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;destroy()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(left_) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;left_-&gt;destroy();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(right_) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;right_-&gt;destroy();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>delete</b></font>&nbsp;<font color="#804040"><b>this</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;T value_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;treenode&lt;RandomAccessIterator&gt;* left_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;treenode&lt;RandomAccessIterator&gt;* right_;<br>
+};<br>
+<br>
+};<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;RandomAccessIterator&gt;<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;tree_sort(RandomAccessIterator first, RandomAccessIterator last)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;treenode&lt;RandomAccessIterator&gt;* tree = treenode&lt;RandomAccessIterator&gt;::build(first, last);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tree-&gt;write(&amp;first);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tree-&gt;destroy();<br>
+}<br>
+<br>
+<font color="#a020f0">#endif</font>&nbsp;<font color="#0000ff">// TREE_SORT_H</font><br>
+</font></body>
+</html>

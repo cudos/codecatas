@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Colin Hughes" />
+<meta name="description" content="A website dedicated to the fascinating world of mathematics and programming" />
+<meta name="keywords" content="programming,mathematics,problems,puzzles" />
+
+<title>Project Euler</title>
+<link rel="shortcut icon" href="favicon.ico" />
+<link rel="stylesheet" type="text/css" href="style_main.css" />
+<link rel="stylesheet" type="text/css" href="style_light.css" />
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({
+      jax: ["input/TeX", "output/HTML-CSS"],
+      tex2jax: {
+         inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+         displayMath: [ ["$$","$$"], ["\\[","\\]"] ],
+         processEscapes: true
+      },
+      "HTML-CSS": { availableFonts: ["TeX"] }
+   });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+</script>
+</head>
+
+<body>
+<div id="container">
+
+   <div id="nav" class="noprint">
+      <ul>
+<li><a href="secure=3fcc6" title="About" accesskey="h">About</a></li>
+<li><a href="register" title="Register" accesskey="1">Register</a></li>
+<li id="current"><a href="problems" title="Problems" accesskey="2">Problems</a></li>
+<li><a href="login" title="Login" accesskey="3">Login</a></li>
+      </ul>
+   </div>
+<div id="info_panel"><a href="rss2_euler.xml"><img src="images/icon_rss.png" alt="RSS Feed" title="RSS Feed" /></a><a href="secure=2aefc"><img src="images/icon_lock.png" alt="Use secure connection" title="Use secure connection" /></a></div>
+
+<div id="logo" class="noprint">
+   <img src="images/pe_banner_light.png" alt="Project Euler .net" />
+</div>
+
+<div id="content">
+<h2>Problems</h2><div class="pagination"><a href="problems" title="Go to page 1">1</a><a href="problems%3Bpage=2" title="Go to page 2">2</a><a href="problems%3Bpage=3" title="Go to page 3">3</a><a href="problems%3Bpage=4" class="current">4</a><a href="problems%3Bpage=5" title="Go to page 5">5</a><a href="problems%3Bpage=6" title="Go to page 6">6</a><a href="problems%3Bpage=7" title="Go to page 7">7</a><a href="problems%3Bpage=8" title="Go to page 8">8</a><a href="problems%3Bpage=9" title="Go to page 9">9</a><a href="problems%3Bpage=10" title="Go to page 10">10</a><span>&nbsp;&nbsp;&nbsp;Go to Problem: <input type="text" id="jump_top" style="width:30px;" onkeypress="if (event.keyCode==13) location.href='problem='+this.value;" /></span></div><div style="clear:both;"></div><br />
+<table class="grid" style="width:800px">
+<tr><th style="width:40px;"><strong><span style="color:#000;text-decoration:underline;">ID</span></strong></th><th style="width:400px;"><b>Description / Title</b></th><th style="width:70px;"><strong>Solved By</th></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>151</b></div></td><td><a href="problem=151" style="text-decoration:none;" title="Published on Friday, 20th April 2007, 06:00 pm">Paper sheets of standard sizes: an expected-value problem.</a></td><td><div style="text-align:center;">2754</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>152</b></div></td><td><a href="problem=152" style="text-decoration:none;" title="Published on Friday, 27th April 2007, 02:00 pm">Writing 1/2 as a sum of inverse squares</a></td><td><div style="text-align:center;">1321</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>153</b></div></td><td><a href="problem=153" style="text-decoration:none;" title="Published on Saturday, 5th May 2007, 10:00 am">Investigating Gaussian Integers</a></td><td><div style="text-align:center;">1287</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>154</b></div></td><td><a href="problem=154" style="text-decoration:none;" title="Published on Saturday, 12th May 2007, 06:00 am">Exploring Pascal&#39;s pyramid.</a></td><td><div style="text-align:center;">1351</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>155</b></div></td><td><a href="problem=155" style="text-decoration:none;" title="Published on Saturday, 19th May 2007, 02:00 am">Counting Capacitor Circuits.</a></td><td><div style="text-align:center;">1776</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>156</b></div></td><td><a href="problem=156" style="text-decoration:none;" title="Published on Friday, 25th May 2007, 10:00 pm">Counting Digits</a></td><td><div style="text-align:center;">1222</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>157</b></div></td><td><a href="problem=157" style="text-decoration:none;" title="Published on Friday, 1st June 2007, 06:00 pm">Solving the diophantine equation <sup>1</sup>/<sub><var>a</var></sub>+<sup>1</sup>/<sub><var>b</var></sub>= <sup><var>p</var></sup>/<sub>10<sup><var>n</var></sup></sub> </a></td><td><div style="text-align:center;">1364</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>158</b></div></td><td><a href="problem=158" style="text-decoration:none;" title="Published on Friday, 15th June 2007, 02:00 pm">Exploring strings for which only one character comes lexicographically after its neighbour to the left.</a></td><td><div style="text-align:center;">1912</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>159</b></div></td><td><a href="problem=159" style="text-decoration:none;" title="Published on Saturday, 30th June 2007, 02:00 pm">Digital root sums of factorisations.
+</a></td><td><div style="text-align:center;">1723</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>160</b></div></td><td><a href="problem=160" style="text-decoration:none;" title="Published on Friday, 7th September 2007, 02:00 pm">Factorial trailing digits</a></td><td><div style="text-align:center;">1704</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>161</b></div></td><td><a href="problem=161" style="text-decoration:none;" title="Published on Friday, 21st September 2007, 06:00 pm">Triominoes</a></td><td><div style="text-align:center;">1084</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>162</b></div></td><td><a href="problem=162" style="text-decoration:none;" title="Published on Friday, 5th October 2007, 10:00 pm">Hexadecimal numbers</a></td><td><div style="text-align:center;">2973</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>163</b></div></td><td><a href="problem=163" style="text-decoration:none;" title="Published on Saturday, 13th October 2007, 02:00 am">Cross-hatched triangles</a></td><td><div style="text-align:center;">994</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>164</b></div></td><td><a href="problem=164" style="text-decoration:none;" title="Published on Saturday, 20th October 2007, 06:00 am">Numbers for which no three consecutive digits have a sum greater than a given value.</a></td><td><div style="text-align:center;">3119</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>165</b></div></td><td><a href="problem=165" style="text-decoration:none;" title="Published on Saturday, 27th October 2007, 10:00 am">Intersections</a></td><td><div style="text-align:center;">1360</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>166</b></div></td><td><a href="problem=166" style="text-decoration:none;" title="Published on Saturday, 3rd November 2007, 01:00 pm">Criss Cross</a></td><td><div style="text-align:center;">2167</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>167</b></div></td><td><a href="problem=167" style="text-decoration:none;" title="Published on Friday, 9th November 2007, 01:00 pm">Investigating Ulam sequences</a></td><td><div style="text-align:center;">912</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>168</b></div></td><td><a href="problem=168" style="text-decoration:none;" title="Published on Friday, 16th November 2007, 05:00 pm">Number Rotations</a></td><td><div style="text-align:center;">1428</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>169</b></div></td><td><a href="problem=169" style="text-decoration:none;" title="Published on Friday, 23rd November 2007, 09:00 pm">Exploring the number of different ways a number can be expressed as a sum of powers of 2.
+</a></td><td><div style="text-align:center;">2496</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>170</b></div></td><td><a href="problem=170" style="text-decoration:none;" title="Published on Saturday, 1st December 2007, 01:00 am">Find the largest 0 to 9 pandigital that can be formed by concatenating products.</a></td><td><div style="text-align:center;">1045</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>171</b></div></td><td><a href="problem=171" style="text-decoration:none;" title="Published on Saturday, 8th December 2007, 05:00 am">Finding numbers for which the sum of the squares of the digits is a square.</a></td><td><div style="text-align:center;">1406</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>172</b></div></td><td><a href="problem=172" style="text-decoration:none;" title="Published on Saturday, 15th December 2007, 09:00 am">Investigating numbers with few repeated digits.</a></td><td><div style="text-align:center;">2028</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>173</b></div></td><td><a href="problem=173" style="text-decoration:none;" title="Published on Saturday, 22nd December 2007, 01:00 pm">Using up to one million tiles how many different "hollow" square laminae can be formed?</a></td><td><div style="text-align:center;">5013</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>174</b></div></td><td><a href="problem=174" style="text-decoration:none;" title="Published on Saturday, 22nd December 2007, 01:00 pm">Counting the number of "hollow" square laminae that can form one, two, three, ... distinct arrangements.</a></td><td><div style="text-align:center;">3326</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>175</b></div></td><td><a href="problem=175" style="text-decoration:none;" title="Published on Friday, 28th December 2007, 01:00 pm">Fractions involving the number of different ways a number can be expressed as a sum of powers of 2. </a></td><td><div style="text-align:center;">1012</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>176</b></div></td><td><a href="problem=176" style="text-decoration:none;" title="Published on Friday, 4th January 2008, 05:00 pm">Right-angled triangles that share a cathetus.</a></td><td><div style="text-align:center;">1052</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>177</b></div></td><td><a href="problem=177" style="text-decoration:none;" title="Published on Friday, 11th January 2008, 09:00 pm">Integer angled Quadrilaterals.</a></td><td><div style="text-align:center;">710</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>178</b></div></td><td><a href="problem=178" style="text-decoration:none;" title="Published on Saturday, 19th January 2008, 01:00 am">Step Numbers</a></td><td><div style="text-align:center;">1854</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>179</b></div></td><td><a href="problem=179" style="text-decoration:none;" title="Published on Saturday, 26th January 2008, 05:00 am">Consecutive positive divisors
+</a></td><td><div style="text-align:center;">6209</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>180</b></div></td><td><a href="problem=180" style="text-decoration:none;" title="Published on Saturday, 2nd February 2008, 09:00 am">Rational zeros of a function of three variables.</a></td><td><div style="text-align:center;">856</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>181</b></div></td><td><a href="problem=181" style="text-decoration:none;" title="Published on Saturday, 9th February 2008, 01:00 pm">Investigating in how many ways objects of two different colours can be grouped.</a></td><td><div style="text-align:center;">1051</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>182</b></div></td><td><a href="problem=182" style="text-decoration:none;" title="Published on Friday, 15th February 2008, 01:00 pm">RSA encryption</a></td><td><div style="text-align:center;">1395</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>183</b></div></td><td><a href="problem=183" style="text-decoration:none;" title="Published on Friday, 22nd February 2008, 05:00 pm">Maximum product of parts</a></td><td><div style="text-align:center;">2722</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>184</b></div></td><td><a href="problem=184" style="text-decoration:none;" title="Published on Friday, 29th February 2008, 09:00 pm">Triangles containing the origin.</a></td><td><div style="text-align:center;">843</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>185</b></div></td><td><a href="problem=185" style="text-decoration:none;" title="Published on Saturday, 8th March 2008, 01:00 am">Number Mind</a></td><td><div style="text-align:center;">1694</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>186</b></div></td><td><a href="problem=186" style="text-decoration:none;" title="Published on Saturday, 15th March 2008, 05:00 am">Connectedness of a network.</a></td><td><div style="text-align:center;">1545</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>187</b></div></td><td><a href="problem=187" style="text-decoration:none;" title="Published on Saturday, 22nd March 2008, 09:00 am">Semiprimes</a></td><td><div style="text-align:center;">6092</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>188</b></div></td><td><a href="problem=188" style="text-decoration:none;" title="Published on Friday, 4th April 2008, 02:00 pm">The hyperexponentiation of a number</a></td><td><div style="text-align:center;">3677</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>189</b></div></td><td><a href="problem=189" style="text-decoration:none;" title="Published on Friday, 11th April 2008, 05:00 pm">Tri-colouring a triangular grid</a></td><td><div style="text-align:center;">1096</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>190</b></div></td><td><a href="problem=190" style="text-decoration:none;" title="Published on Friday, 18th April 2008, 10:00 pm">Maximising a weighted product
+</a></td><td><div style="text-align:center;">2296</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>191</b></div></td><td><a href="problem=191" style="text-decoration:none;" title="Published on Saturday, 26th April 2008, 01:00 am">Prize Strings</a></td><td><div style="text-align:center;">3912</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>192</b></div></td><td><a href="problem=192" style="text-decoration:none;" title="Published on Saturday, 3rd May 2008, 05:00 am">Best Approximations</a></td><td><div style="text-align:center;">861</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>193</b></div></td><td><a href="problem=193" style="text-decoration:none;" title="Published on Saturday, 10th May 2008, 01:00 pm">Squarefree Numbers</a></td><td><div style="text-align:center;">1690</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>194</b></div></td><td><a href="problem=194" style="text-decoration:none;" title="Published on Saturday, 17th May 2008, 10:00 am">Coloured Configurations</a></td><td><div style="text-align:center;">776</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>195</b></div></td><td><a href="problem=195" style="text-decoration:none;" title="Published on Friday, 23rd May 2008, 02:00 pm">Inscribed circles of triangles with one angle of 60 degrees</a></td><td><div style="text-align:center;">729</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>196</b></div></td><td><a href="problem=196" style="text-decoration:none;" title="Published on Friday, 30th May 2008, 06:00 pm">Prime triplets</a></td><td><div style="text-align:center;">1308</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>197</b></div></td><td><a href="problem=197" style="text-decoration:none;" title="Published on Friday, 6th June 2008, 10:00 pm">Investigating the behaviour of a recursively defined sequence</a></td><td><div style="text-align:center;">2925</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>198</b></div></td><td><a href="problem=198" style="text-decoration:none;" title="Published on Saturday, 14th June 2008, 02:00 am">Ambiguous Numbers</a></td><td><div style="text-align:center;">622</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>199</b></div></td><td><a href="problem=199" style="text-decoration:none;" title="Published on Saturday, 21st June 2008, 06:00 am">Iterative Circle Packing</a></td><td><div style="text-align:center;">994</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>200</b></div></td><td><a href="problem=200" style="text-decoration:none;" title="Published on Saturday, 28th June 2008, 10:00 am">Find the 200th prime-proof sqube containing the contiguous sub-string "200"</a></td><td><div style="text-align:center;">1226</div></td></tr>
+</table>
+<br /><div class="pagination"><a href="problems" title="Go to page 1">1</a><a href="problems%3Bpage=2" title="Go to page 2">2</a><a href="problems%3Bpage=3" title="Go to page 3">3</a><a href="problems%3Bpage=4" class="current">4</a><a href="problems%3Bpage=5" title="Go to page 5">5</a><a href="problems%3Bpage=6" title="Go to page 6">6</a><a href="problems%3Bpage=7" title="Go to page 7">7</a><a href="problems%3Bpage=8" title="Go to page 8">8</a><a href="problems%3Bpage=9" title="Go to page 9">9</a><a href="problems%3Bpage=10" title="Go to page 10">10</a><span>&nbsp;&nbsp;&nbsp;Go to Problem: <input type="text" id="jump_bottom" style="width:30px;" onkeypress="if (event.keyCode==13) location.href='problem='+this.value;" /></span></div><div style="clear:both;"></div><script type="text/javascript">
+function gotoPage(elem) {
+   page = elem.value;
+   page_str = ";page="+page;
+   if ( elem.value==1 ) page_str = "";
+   if ( page>0 && page<=10) location.href='problems'+page_str;
+}
+//document.getElementById('jump_top').focus();
+</script>
+</div>
+
+
+
+
+
+<div id="footer" class="noprint">
+<a href="copyright">Project Euler Copyright Information</a>
+<!--/Creative Commons License--><!-- <rdf:RDF xmlns="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+   <Work rdf:about="">
+      <license rdf:resource="http://creativecommons.org/licenses/by-nc-sa/2.0/uk/" />
+   <dc:type rdf:resource="http://purl.org/dc/dcmitype/Text" />
+   </Work>
+   <License rdf:about="http://creativecommons.org/licenses/by-nc-sa/2.0/uk/"><permits rdf:resource="http://web.resource.org/cc/Reproduction"/><permits rdf:resource="http://web.resource.org/cc/Distribution"/><requires rdf:resource="http://web.resource.org/cc/Notice"/><requires rdf:resource="http://web.resource.org/cc/Attribution"/><prohibits rdf:resource="http://web.resource.org/cc/CommercialUse"/><permits rdf:resource="http://web.resource.org/cc/DerivativeWorks"/><requires rdf:resource="http://web.resource.org/cc/ShareAlike"/></License></rdf:RDF> -->
+</div>
+</div>
+<div style="height:1px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </div></body>
+</html>

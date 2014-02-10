@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>permutation.c</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;permutation.c - the next permutation algorithm</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;www.martinbroadhurst.com</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;permutation.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;swap(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;*ar, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;first, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;second)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;temp = ar[first];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ar[first] = ar[second];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ar[second] = temp;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;reverse(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;*ar, <font color="#2e8b57"><b>size_t</b></font>&nbsp;len)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;i, j;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(i = <font color="#ff00ff">0</font>, j = len - <font color="#ff00ff">1</font>; i &lt; j; i++, j--) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;swap(ar, i, j);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBnext_permutation(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;*ar, <font color="#2e8b57"><b>size_t</b></font>&nbsp;len)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;i1, i2;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;result = <font color="#ff00ff">0</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Find the rightmost element that is the first in a pair in ascending order </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(i1 = len - <font color="#ff00ff">2</font>, i2 = len - <font color="#ff00ff">1</font>; ar[i2] &lt;= ar[i1] &amp;&amp; i1 != <font color="#ff00ff">0</font>; i1--, i2--);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(ar[i2] &lt;= ar[i1]) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;If not found, array is highest permutation </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reverse(ar, len);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Find the rightmost element to the right of i1 that is greater than ar[i1] </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(i2 = len - <font color="#ff00ff">1</font>; i2 &gt; i1 &amp;&amp; ar[i2] &lt;= ar[i1]; i2--);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Swap it with the first one </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;swap(ar, i1, i2);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Reverse the remainder </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reverse(ar + i1 + <font color="#ff00ff">1</font>, len - i1 - <font color="#ff00ff">1</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result = <font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;result;<br>
+}<br>
+<br>
+</font></body>
+</html>

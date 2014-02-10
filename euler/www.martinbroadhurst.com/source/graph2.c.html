@@ -1,0 +1,213 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>graph2.c</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;graph2.c - a graph as an adjacency list</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst </font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;www.martinbroadhurst.com</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdlib.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;edge.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;graph2.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBset *neighbours;<br>
+} vertex_body;<br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;vertex_body * vertex_body_create(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vertex_body * body = malloc(<font color="#804040"><b>sizeof</b></font>(vertex_body));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(body) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body-&gt;neighbours = MBset_create((MBcmpfn)MBvertex_compare);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;body;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;vertex_body_delete(vertex_body * body)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(body) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBset_delete(body-&gt;neighbours);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;free(body);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;MBset * vertex_get_neighbours(<font color="#2e8b57"><b>const</b></font>&nbsp;MBvertex * vertex)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;((vertex_body*)vertex-&gt;body)-&gt;neighbours;<br>
+}<br>
+<br>
+MBgraph2 *MBgraph2_create(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBgraph2 *graph = malloc(<font color="#804040"><b>sizeof</b></font>(MBgraph2));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(graph) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;graph-&gt;vertices = MBset_create((MBcmpfn)MBvertex_compare);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;graph;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBgraph2_delete(MBgraph2 *graph)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(graph) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBset_for_each(graph-&gt;vertices, (MBforfn)MBvertex_delete);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBset_delete(graph-&gt;vertices);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;free(graph);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+MBvertex *MBgraph2_add(MBgraph2 *graph, <font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*name, <font color="#2e8b57"><b>void</b></font>&nbsp;*data)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBvertex *vertex = MBvertex_create(name, data, vertex_body_create(), (MBdeletefn)vertex_body_delete);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBvertex *existing = MBset_add(graph-&gt;vertices, vertex);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBvertex_delete(existing);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;vertex;<br>
+}<br>
+<br>
+MBvertex *MBgraph2_get_vertex(<font color="#2e8b57"><b>const</b></font>&nbsp;MBgraph2 *graph, <font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*name)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;MBset_find(graph-&gt;vertices, &amp;name);<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;*MBgraph2_remove(MBgraph2 *graph, MBvertex *vertex)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;*data = <font color="#ff00ff">NULL</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;v;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBvertex *removed;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Remove the vertex from all neighbour lists </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(v = <font color="#ff00ff">0</font>; v &lt; MBset_get_count(graph-&gt;vertices); v++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBvertex *current = MBset_get(graph-&gt;vertices, v);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(MBvertex_compare(current, vertex) != <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBset_remove(vertex_get_neighbours(current), vertex);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Remove the vertex </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;removed = MBset_remove(graph-&gt;vertices, vertex);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(removed) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data = removed-&gt;data;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBvertex_delete(removed);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;data;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBgraph2_add_edge(MBgraph2 *graph, MBvertex *vertex1, MBvertex *vertex2)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBset_add(vertex_get_neighbours(vertex1), vertex2);<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBgraph2_remove_edge(MBgraph2 *graph, MBvertex *vertex1, MBvertex *vertex2)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBset *neighbours = vertex_get_neighbours(vertex1);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBvertex *neighbour = MBset_find(neighbours, vertex2);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(neighbour) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBset_remove(neighbours, neighbour);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBgraph2_get_adjacent(<font color="#2e8b57"><b>const</b></font>&nbsp;MBgraph2 *graph, <font color="#2e8b57"><b>const</b></font>&nbsp;MBvertex *vertex1, <font color="#2e8b57"><b>const</b></font>&nbsp;MBvertex *vertex2)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;MBset_find(vertex_get_neighbours(vertex1), vertex2) != <font color="#ff00ff">NULL</font>;<br>
+}<br>
+<br>
+MBiterator *MBgraph2_get_neighbours(<font color="#2e8b57"><b>const</b></font>&nbsp;MBgraph2 *graph, <font color="#2e8b57"><b>const</b></font>&nbsp;MBvertex *vertex)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;MBset_iterator(vertex_get_neighbours(vertex));<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;MBgraph2 *graph;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;v; <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Index of the current vertex </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Index of the current neighbour </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBedge *edge;<br>
+} edge_iterator;<br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;edge_iterator *edge_iterator_create(<font color="#2e8b57"><b>const</b></font>&nbsp;MBgraph2 *graph)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;edge_iterator *it = malloc(<font color="#804040"><b>sizeof</b></font>(edge_iterator));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it-&gt;graph = graph;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it-&gt;edge = malloc(<font color="#804040"><b>sizeof</b></font>(MBedge));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it-&gt;v = <font color="#ff00ff">0</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it-&gt;n = <font color="#ff00ff">0</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;it;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;edge_iterator_delete(edge_iterator *it)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;free(it-&gt;edge);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;free(it);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;*edge_iterator_get(edge_iterator *it)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBedge *edge = <font color="#ff00ff">NULL</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBvertex *vertex;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBvertex *neighbour;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vertex = MBset_get(it-&gt;graph-&gt;vertices, it-&gt;v);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(vertex != <font color="#ff00ff">NULL</font>&nbsp;&amp;&amp; edge == <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;neighbour = MBset_get(vertex_get_neighbours(vertex), it-&gt;n);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(neighbour) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it-&gt;edge-&gt;from = vertex;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it-&gt;edge-&gt;to = neighbour;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it-&gt;n++;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edge = it-&gt;edge;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Move to the next vertex </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it-&gt;v++;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vertex = MBset_get(it-&gt;graph-&gt;vertices, it-&gt;v);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it-&gt;n = <font color="#ff00ff">0</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;edge;<br>
+}<br>
+<br>
+MBiterator *MBgraph2_get_edges(<font color="#2e8b57"><b>const</b></font>&nbsp;MBgraph2 *graph)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;MBiterator_create(edge_iterator_create(graph), (MBgetfn)edge_iterator_get, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(MBdeletefn)edge_iterator_delete);<br>
+}<br>
+<br>
+MBiterator *MBgraph2_get_vertices(<font color="#2e8b57"><b>const</b></font>&nbsp;MBgraph2 *graph)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;MBset_iterator(graph-&gt;vertices);<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBgraph2_get_neighbour_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBgraph2 * graph, <font color="#2e8b57"><b>const</b></font>&nbsp;MBvertex * vertex)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;MBset_get_count(vertex_get_neighbours(vertex));<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBgraph2_get_edge_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBgraph2 * graph)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;The edge count is the sum of all of the neighbour counts </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;v;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;edges = <font color="#ff00ff">0</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(v = <font color="#ff00ff">0</font>; v &lt; MBset_get_count(graph-&gt;vertices); v++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;MBvertex *vertex = MBset_get(graph-&gt;vertices, v);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;edges += MBset_get_count(vertex_get_neighbours(vertex));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;edges;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBgraph2_get_vertex_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBgraph2 * graph)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;MBset_get_count(graph-&gt;vertices);<br>
+}<br>
+<br>
+<br>
+</font></body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>stack.h</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;stack.h - a stack as a singly-linked list</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst </font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;www.martinbroadhurst.com</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#ifndef STACK_H</font><br>
+<font color="#a020f0">#define STACK_H</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;mbcommon.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;slist.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iterator.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBslist *list;<br>
+} MBstack;<br>
+<br>
+MBstack *MBstack_create(<font color="#2e8b57"><b>void</b></font>);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBstack_delete(MBstack *stack);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBstack_push(<font color="#2e8b57"><b>const</b></font>&nbsp;MBstack *stack, <font color="#2e8b57"><b>void</b></font>&nbsp;*data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;*MBstack_pop(<font color="#2e8b57"><b>const</b></font>&nbsp;MBstack *stack);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;*MBstack_peek(<font color="#2e8b57"><b>const</b></font>&nbsp;MBstack *stack);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBstack_get_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBstack *stack);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBstack_for_each(<font color="#2e8b57"><b>const</b></font>&nbsp;MBstack *stack, MBforfn forfn);<br>
+MBiterator *MBstack_iterator(<font color="#2e8b57"><b>const</b></font>&nbsp;MBstack * stack);<br>
+<br>
+<font color="#a020f0">#endif</font>&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;STACK_H </font><font color="#0000ff">*/</font><br>
+<br>
+</font></body>
+</html>

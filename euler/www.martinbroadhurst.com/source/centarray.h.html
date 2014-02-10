@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>centarray.h</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;MBcentarray.h - a dynamic array with centring of the used block</font><br>
+<font color="#0000ff">&nbsp;* </font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst (martin@martinbroadhurst.com) </font><br>
+<font color="#0000ff">&nbsp;*</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#ifndef MBCENTARRAY_H</font><br>
+<font color="#a020f0">#define MBCENTARRAY_H</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iterator.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;mbcommon.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;MBcentarray {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;** buffer;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;size;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;count;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;incr;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;origin;<br>
+};<br>
+<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBcentarray MBcentarray;<br>
+<br>
+MBcentarray * MBcentarray_create(<font color="#2e8b57"><b>void</b></font>);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcentarray_empty(MBcentarray * array);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcentarray_delete(MBcentarray * array);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcentarray_add_tail(MBcentarray * array, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcentarray_add_head(MBcentarray * array, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBcentarray_remove_tail(MBcentarray * array);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBcentarray_remove_head(MBcentarray * array);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcentarray_insert(MBcentarray *array, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;pos, <font color="#2e8b57"><b>void</b></font>&nbsp;*data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBcentarray_remove(MBcentarray *array, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;index);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBcentarray_get(<font color="#2e8b57"><b>const</b></font>&nbsp;MBcentarray * array, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;pos);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBcentarray_set(MBcentarray * array, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;pos, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcentarray_for_each(<font color="#2e8b57"><b>const</b></font>&nbsp;MBcentarray * array, MBforfn forfn);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBcentarray_get_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBcentarray * array);<br>
+MBiterator *MBcentarray_iterator(<font color="#2e8b57"><b>const</b></font>&nbsp;MBcentarray *array);<br>
+<br>
+<font color="#a020f0">#endif</font>&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;MBCENTARRAY_H </font><font color="#0000ff">*/</font><br>
+</font></body>
+</html>

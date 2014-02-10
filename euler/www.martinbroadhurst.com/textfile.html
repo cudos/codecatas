@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Reading a Text File in C</title>
+</head>
+<body>
+<p><a href="index.html">Martin Broadhurst</a>
+<h1>Reading a Text File in C</h1>
+<p>This is a little library to solve the perennial problem of reading a text file line by line in C.
+<p>Here is an example of its use:
+<div>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&quot;textfile.h&quot;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*line;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBtextfile *file = MBtextfile_open(<font color="#ff00ff">&quot;test.txt&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(file) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;((line = MBtextfile_read(file)) != <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;</font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, line);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBtextfile_close(file);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+</div>
+<p>You can open a file with <code>MBtextfile_open</code> and close it with <code>MBtextfile_close</code>, or wrap an already-open file with <code>MBtextfile_create</code> and <code>MBtextfile_delete</code>.
+You mustn't mix ordinary reading of the file with calls to <code>MBtextfile_read</code> though, as the file is buffered, so the file position after reading a line is not necessarily at the end of the last line read.
+<p>Lines can be of any length (up to <var><code>size_t</code> - 1</var> characters), and Unix or DOS line endings are handled correctly.
+A blank line will produce an empty string.
+The carriage returns at the ends of the lines are discarded.
+After the last line has been read, <code>MBtextfile_read</code> returns <var>NULL</var>.
+<ul>
+	<li><a href="source/textfile.h.html">textfile.h</a>
+	<li><a href="source/textfile.c.html">textfile.c</a>
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

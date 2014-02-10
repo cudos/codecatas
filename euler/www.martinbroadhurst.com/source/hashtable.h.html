@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>hashtable.h</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;hashtable.h - a hash table with singly-linked list overflow chains</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst </font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;www.martinbroadhurst.com</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#ifndef HASHTABLE_H</font><br>
+<font color="#a020f0">#define HASHTABLE_H</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;mbcommon.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iterator.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;hashnode {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;* data;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;hashnode * next;<br>
+};<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;hashnode hashnode;<br>
+<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;(*MBhashfn)(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>*);<br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;MBhashtable {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;size;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBhashfn hashfn;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBcmpfn cmpfn;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hashnode ** buckets;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;count;<br>
+};<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBhashtable MBhashtable;<br>
+<br>
+MBhashtable * MBhashtable_create(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;size, MBhashfn hashfn, MBcmpfn cmpfn);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBhashtable_empty(MBhashtable * table);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBhashtable_delete(MBhashtable * table);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBhashtable_add(MBhashtable * table, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBhashtable_find(<font color="#2e8b57"><b>const</b></font>&nbsp;MBhashtable * table, <font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBhashtable_remove(MBhashtable * table, <font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>float</b></font>&nbsp;MBhashtable_get_load_factor(<font color="#2e8b57"><b>const</b></font>&nbsp;MBhashtable * table);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBhashtable_get_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBhashtable * table);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBhashtable_for_each(<font color="#2e8b57"><b>const</b></font>&nbsp;MBhashtable * table, MBforfn forfn);<br>
+MBiterator * MBhashtable_iterator(<font color="#2e8b57"><b>const</b></font>&nbsp;MBhashtable * table);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBhashtable_find_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBhashtable *table);<br>
+<br>
+<font color="#a020f0">#endif</font>&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;HASHTABLE_H </font><font color="#0000ff">*/</font><br>
+<br>
+<br>
+<br>
+</font></body>
+</html>

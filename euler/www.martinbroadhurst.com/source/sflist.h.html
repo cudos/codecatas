@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>sflist.h</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;sflist.h - a singly-linked list with free nodes at the head</font><br>
+<font color="#0000ff">&nbsp;*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst (martin@martinbroadhurst.com) </font><br>
+<font color="#0000ff">&nbsp;*</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#ifndef MBSFLIST_H</font><br>
+<font color="#a020f0">#define MBSFLIST_H</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;mbcommon.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iterator.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;MBsfnode {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;* data;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBsfnode * next;<br>
+};<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBsfnode MBsfnode;<br>
+<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBsfnode * start;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBsfnode * head;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;count;<br>
+} MBsflist;<br>
+<br>
+MBsflist * MBsflist_create(<font color="#2e8b57"><b>void</b></font>);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBsflist_empty(MBsflist * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBsflist_delete(MBsflist * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBsflist_add_tail(MBsflist * list, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBsflist_add_head(MBsflist * list, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBsflist_remove_head(MBsflist * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBsflist_remove_tail(MBsflist * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBsflist_remove(MBsflist *list, MBsfnode *node, MBsfnode *previous);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBsflist_insert_before(MBsflist * list, MBsfnode * node, MBsfnode * previous, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+MBsfnode * MBsflist_insert_after(MBsflist * list, MBsfnode * node, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBsflist_for_each(<font color="#2e8b57"><b>const</b></font>&nbsp;MBsflist * list, MBforfn forfn);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBsflist_get_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBsflist * list);<br>
+MBiterator * MBsflist_iterator(<font color="#2e8b57"><b>const</b></font>&nbsp;MBsflist * list);<br>
+<br>
+<font color="#a020f0">#endif</font>&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;MBSFLIST_H </font><font color="#0000ff">*/</font><br>
+</font></body>
+</html>

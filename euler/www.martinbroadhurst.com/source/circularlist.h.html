@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>circularlist.h</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;circularlist.h - a circular linked list</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst </font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;www.martinbroadhurst.com</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#ifndef CIRCULARLIST_H</font><br>
+<font color="#a020f0">#define CIRCULARLIST_H</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;mbcommon.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iterator.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;MBcnode {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBcnode * next;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBcnode * previous;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;* data;<br>
+};<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBcnode MBcnode;<br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;MBcircularlist {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBcnode * head;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;count;<br>
+};<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBcircularlist MBcircularlist;<br>
+<br>
+MBcircularlist * MBcircularlist_create(<font color="#2e8b57"><b>void</b></font>);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcircularlist_delete(MBcircularlist * list);<br>
+<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcircularlist_add_head(MBcircularlist * list, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcircularlist_add_tail(MBcircularlist * list, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBcircularlist_remove_head(MBcircularlist * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBcircularlist_remove_tail(MBcircularlist * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBcircularlist_remove_node(MBcircularlist * list, MBcnode * node);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcircularlist_empty(MBcircularlist * list);<br>
+<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcircularlist_insert_before(MBcircularlist * list, MBcnode * node, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcircularlist_insert_after(MBcircularlist * list, MBcnode * node, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBcircularlist_for_each(<font color="#2e8b57"><b>const</b></font>&nbsp;MBcircularlist * list, MBforfn forfn);<br>
+MBiterator *MBcircularlist_iterator(<font color="#2e8b57"><b>const</b></font>&nbsp;MBcircularlist *list);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBcircularlist_get_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBcircularlist * list);<br>
+<br>
+<font color="#a020f0">#endif</font>&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;CIRCULARLIST_H </font><font color="#0000ff">*/</font><br>
+</font></body>
+</html>

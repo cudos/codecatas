@@ -1,0 +1,310 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Sorting Algorithms</title>
+</head>
+<body>
+<p><a href="index.html">Martin Broadhurst</a>
+<h1>Sorting Algorithms</h1>
+<h2>Preface</h2>
+<p>These are some sorting algorithms I've written in C++.
+<h2>Contents</h2>
+<ul>
+<li><a href="cpp-sorting.html#bubble-sort">Bubble sort</a>
+<li><a href="cpp-sorting.html#cocktail-sort">Cocktail sort</a>
+<li><a href="cpp-sorting.html#tree-sort">Tree sort</a>
+<li><a href="cpp-sorting.html#selection-sort">Selection sort</a>
+<li><a href="cpp-sorting.html#minmax-sort">Min-max sort</a>
+<li><a href="cpp-sorting.html#example">Example program</a>
+</ul>
+<h2><a name="bubble-sort">Bubble sort</a></h2>
+<p><a href="source/bubble_sort.h.html">bubble_sort.h</a>
+<p>In a bubble sort, a series of passes is made over the data, and in each pass, every pair of adjacent elements is compared.
+If they are in the wrong order, they are swapped.
+The sort completes when no changes have been made in a pass.
+In each pass the maximum element is &quot;bubbled&quot; to the end, as it will be swapped with every succeeding element, and consequently becoming a part of the next comparison.
+The effect of this is that a sorted sublist is built up at the right of the input list.
+The end of the sublist to be sorted is shortened by one element after each pass to avoid examining the sorted sublist.
+<div>
+<font face="monospace" size="2">
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;RandomAccessIterator&gt;<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;bubble_sort(RandomAccessIterator first, RandomAccessIterator last)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>bool</b></font>&nbsp;finished = <font color="#ff00ff">false</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RandomAccessIterator it, end = last - <font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(!finished) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>bool</b></font>&nbsp;changed = <font color="#ff00ff">false</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(it = first; it &lt; end; ++it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(*it &gt; *(it + <font color="#ff00ff">1</font>)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::swap(*it, *(it + <font color="#ff00ff">1</font>));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changed = <font color="#ff00ff">true</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(changed) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--end;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;finished = <font color="#ff00ff">true</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+</font>
+</div>
+<h2><a name="cocktail-sort">Cocktail sort</a></h2>
+<p><a href="source/cocktail_sort.h.html">cocktail_sort.h</a>
+<p>By implementing a bubble sort bidirectionally, with the direction of each pass alternating, both the smallest and largest elements of the unsorted range are put in their proper place on each pass.
+This has the advantage of moving small elements at the end of the range to their proper place much more quickly.
+The effect is that a sorted sublist is built up at each end of the input list, and the sublist still to be sorted is correspondingly reduced by one element at each end after each pass.
+<div>
+<font face="monospace" size="2">
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;RandomAccessIterator&gt;<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;cocktail_sort(RandomAccessIterator first, RandomAccessIterator last)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>bool</b></font>&nbsp;finished = <font color="#ff00ff">false</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RandomAccessIterator it, begin = first, end = last - <font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(!finished) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Forward pass</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>bool</b></font>&nbsp;changed = <font color="#ff00ff">false</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(it = begin; it &lt; end; ++it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(*it &gt; *(it + <font color="#ff00ff">1</font>)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::swap(*it, *(it + <font color="#ff00ff">1</font>));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changed = <font color="#ff00ff">true</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(changed) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--end;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;finished = <font color="#ff00ff">true</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!finished) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Reverse pass</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changed = <font color="#ff00ff">false</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(it = end; it &gt; begin; --it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(*it &lt; *(it - <font color="#ff00ff">1</font>)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::swap(*it, *(it - <font color="#ff00ff">1</font>));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changed = <font color="#ff00ff">true</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(changed) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++begin;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;finished = <font color="#ff00ff">true</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+</font>
+</div>
+<h2><a name="tree-sort">Tree Sort</a></h2>
+<p><a href="source/tree_sort.h.html">tree_sort.h</a>
+<p>A binary tree is a sorted data structure, and a list can be sorted by inserting its elements into a binary tree, and then retrieving them in order.
+<div>
+<font face="monospace" size="2">
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;RandomAccessIterator&gt;<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;tree_sort(RandomAccessIterator first, RandomAccessIterator last)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;treenode&lt;RandomAccessIterator&gt;* tree = treenode&lt;RandomAccessIterator&gt;::build(first, last);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tree-&gt;write(&amp;first);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tree-&gt;destroy();<br>
+}<br>
+</font>
+</div>
+<p>This sort requires auxilliary storage, and perhaps in C++ it should have a different interface in order to allow an Allocator to be supplied by the client.
+<p>This is the process of building up the tree:
+<div>
+<font face="monospace" size="2">
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>static</b></font>&nbsp;treenode&lt;RandomAccessIterator&gt;* build(RandomAccessIterator first, RandomAccessIterator last)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;treenode&lt;RandomAccessIterator&gt;* root = <font color="#ff00ff">NULL</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(RandomAccessIterator it = first; it &lt; last; ++it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;treenode&lt;RandomAccessIterator&gt;* node = <font color="#804040"><b>new</b></font>&nbsp;treenode&lt;RandomAccessIterator&gt;(*it);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(root == <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;root = node;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;treenode&lt;RandomAccessIterator&gt;* current = root,* previous = <font color="#ff00ff">NULL</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>bool</b></font>&nbsp;less;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(current != <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;less = node-&gt;value_ &lt; current-&gt;value_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;previous = current;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;current = less ? current-&gt;left_ : current-&gt;right_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(less) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;previous-&gt;left_ = node;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;previous-&gt;right_ = node;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;root;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+</font>
+</div>
+<p>Once the tree has been assembled, it is traversed in order using a recursive function and its contents are stored in the iterator.
+Note that the iterator is passed by address; this is how you ensure that a value is shared across all stack frames in a recursive algorithm.
+<div>
+<font face="monospace" size="2">
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;write(RandomAccessIterator* it) <font color="#2e8b57"><b>const</b></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(left_) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;left_-&gt;write(it);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;**it = value_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++(*it);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(right_) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;right_-&gt;write(it);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+</font>
+</div>
+<p>After the sorted data has been stored back to the iterator, the tree is recursively destroyed.
+This needs to be performed in postorder so that the subtrees are destroyed before the parent node.
+<div>
+<font face="monospace" size="2">
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;destroy()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(left_) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;left_-&gt;destroy();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(right_) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;right_-&gt;destroy();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>delete</b></font>&nbsp;<font color="#804040"><b>this</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+</font>
+</div>
+<h2><a name="selection-sort">Selection sort</a></h2>
+<p><a href="source/selection_sort.h.html">selection_sort.h</a>
+<p>In a selection sort the data is searched for the minimum (or maximum) element, and this is swapped with the element in its place at the end.
+As with a bubble sort, the end of the range to be sorted is adjusted after each pass as a sorted sublist is built up at the end.
+The construction of the sorted range is identical to that in a bubble sort, but it is performed much more efficiently because there are fewer swaps.
+<div>
+<font face="monospace" size="2">
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;RandomAccessIterator&gt;<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;selection_sort(RandomAccessIterator first, RandomAccessIterator last)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RandomAccessIterator begin = first;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(begin &lt; last) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RandomAccessIterator it, min;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>bool</b></font>&nbsp;started = <font color="#ff00ff">false</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(it = begin; it &lt; last; ++it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!started || *it &lt; *min) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;min = it;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;started = <font color="#ff00ff">true</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::swap(*min, *begin);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++begin; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+</font>
+</div>
+<h2><a name="minmax-sort">Min-max sort</a></h2>
+<p><a href="source/minmax_sort.h.html">minmax_sort.h</a>
+<p>One can perform a selection sort and simultaneously search for the minimum and maximum element and move them to their proper places in each pass.
+This has the effect of building up a sorted sublist at each end, with the unsorted part becoming smaller from each ends, as in a cocktail sort.
+Again, the construction of the sorted ranges is performed much more efficiently in this sort than a cocktail sort because there are fewer swaps.
+<div>
+<font face="monospace" size="2">
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;RandomAccessIterator&gt;<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;minmax_sort(RandomAccessIterator first, RandomAccessIterator last)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RandomAccessIterator begin = first;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;RandomAccessIterator end = last - <font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(begin &lt; end) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;RandomAccessIterator it, min, max;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>bool</b></font>&nbsp;started = <font color="#ff00ff">false</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(it = begin; it &lt;= end; ++it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!started) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;min = it;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max = it;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;started = <font color="#ff00ff">true</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(*it &lt; *min) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;min = it;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(*it &gt; *max) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;max = it;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(max == begin &amp;&amp; min == end) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Swap min and max only</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::swap(*max, *min);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(max == begin) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Swap max and end first</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::swap(*max, *end);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::swap(*min, *begin);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Swap min and begin first</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::swap(*min, *begin);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::swap(*max, *end);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;++begin; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;--end;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+</font>
+</div>
+<h2><a name="example">Example program</a></h2>
+<p>Below is an example program to exercise the sorting algorithms:
+<div>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;vector&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iostream&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;functional&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iterator&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&quot;bubble_sort.h&quot;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&quot;cocktail_sort.h&quot;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&quot;tree_sort.h&quot;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&quot;selection_sort.h&quot;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&quot;minmax_sort.h&quot;</font><br>
+<br>
+<font color="#2e8b57"><b>namespace</b></font><br>
+{<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;ForwardIterator&gt;<br>
+<font color="#2e8b57"><b>bool</b></font>&nbsp;is_sorted(ForwardIterator first, ForwardIterator last)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>typename</b></font>&nbsp;std::iterator_traits&lt;ForwardIterator&gt;::value_type T;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;std::adjacent_find(first, last, std::greater&lt;T&gt;()) == last;<br>
+}<br>
+<br>
+};<br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main()<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>typedef</b></font>&nbsp;std::vector&lt;<font color="#2e8b57"><b>int</b></font>&gt;::iterator I;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;(*sortfn)(I, I);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sortfn sorts[] = { bubble_sort&lt;I&gt;, cocktail_sort&lt;I&gt;, tree_sort&lt;I&gt;, selection_sort&lt;I&gt;, minmax_sort&lt;I&gt; };<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;numsorts = <font color="#804040"><b>sizeof</b></font>(sorts) / <font color="#804040"><b>sizeof</b></font>(sortfn);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;<font color="#2e8b57"><b>int</b></font>&gt; numbers;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;i = <font color="#ff00ff">0</font>; i &lt; <font color="#ff00ff">100</font>; i++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;numbers.push_back(rand());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::copy(numbers.begin(), numbers.end(), std::ostream_iterator&lt;<font color="#2e8b57"><b>int</b></font>&gt;(std::cout, <font color="#ff00ff">&quot; &quot;</font>));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;s = <font color="#ff00ff">0</font>; s &lt; numsorts; s++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::vector&lt;<font color="#2e8b57"><b>int</b></font>&gt; vec(numbers.begin(), numbers.end());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sorts[s](vec.begin(), vec.end());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::copy(vec.begin(), vec.end(), std::ostream_iterator&lt;<font color="#2e8b57"><b>int</b></font>&gt;(std::cout, <font color="#ff00ff">&quot; &quot;</font>));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; is_sorted(vec.begin(), vec.end()) &lt;&lt; std::endl;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+</div>
+<div align="center">
+<p>Copyright (C) 2010 <a href="index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

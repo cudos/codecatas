@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Deque</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<p><a href="../index.html">Martin Broadhurst</a> &gt; <a href="../data-structures.html">Data Structures</a>
+<h1>Deque</h1>
+<h2>Contents</h2>
+<ul>
+	<li><a href="deque.html#introduction">Introduction</a>
+	<li><a href="deque.html#creation">Creation</a>
+	<li><a href="deque.html#adding-elements">Adding elements</a>
+	<li><a href="deque.html#removing-elements">Removing elements</a>
+	<li><a href="deque.html#accessing-elements">Accessing elements</a>
+	<li><a href="deque.html#example-program">Example program</a>
+	<li><a href="deque.html#source-code">Source code</a>
+	<li><a href="deque.html#download">Download</a>
+</ul>
+<a name="introduction"></a>
+<h2>Introduction</h2>
+<p>A deque or <i>double-ended queue</i> is a <a href="../data-structures.html">data structure</a> that allows efficient addition and removal at either end.
+It may also support accessing elements by index, as this implementation does.
+<p>This deque is implemented as a <a href="dynamic-array.html">dynamic array</a> of fixed-size arrays.
+The first array is filled from right to left, and the last one from left to right, as shown in the following diagram:</p>
+<img src="deque.jpg"></img>
+<a name="creation"></a>
+<h2>Creation</h2>
+<p>Create a deque with <span class="name">MBdeque_create</span>.
+<a name="adding-elements"></a>
+<h2>Adding elements</h2>
+<p>Add at the head with <span class="name">MBdeque_push_front</span>, and add at the tail with <span class="name">MBdeque_push_back</span>.
+<a name="removing-elements"></a>
+<h2>Removing elements</h2>
+<p>Remove from the head with <span class="name">MBdeque_pop_front</span>, and remove from the tail with <span class="name">MBdeque_pop_back</span>.
+<a name="accessing-elements"></a>
+<h2>Accessing elements</h2>
+<p>Access elements by array index using <span class="name">MBdeque_get_at</span> and <span class="name">MBdeque_set_at</span>. 
+Look at the first and last elements with <span class="name">MBdeque_peek_front</span> and <span class="name">MBdeque_peek_back</span>.
+Get an iterator over the elements with <span class="name">MBdeque_iterator</span>.
+<a name="example-program"></a>
+<h2>Example program</h2>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;deque.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;(*addfn)(MBdeque*, <font color="#2e8b57"><b>void</b></font>*);<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>*(*removefn)(MBdeque*);<br>
+<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;test(MBdeque *deque, addfn addfn, removefn removefn)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;* elements[] = {<font color="#ff00ff">&quot;A&quot;</font>, <font color="#ff00ff">&quot;B&quot;</font>, <font color="#ff00ff">&quot;C&quot;</font>, <font color="#ff00ff">&quot;D&quot;</font>, <font color="#ff00ff">&quot;E&quot;</font>, <font color="#ff00ff">&quot;F&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(elements) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBiterator *it;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;*data;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(i = <font color="#ff00ff">0</font>; i &lt; n; i++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;addfn(deque, elements[i]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;front is </font><font color="#6a5acd">%s</font><font color="#ff00ff">, back is </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, (<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*)MBdeque_peek_front(deque), (<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*)MBdeque_peek_back(deque));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;it = MBdeque_iterator(deque);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;((data = MBiterator_get(it))) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;</font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, (<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*)data);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBiterator_delete(it);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(i = <font color="#ff00ff">0</font>; i &lt; n; i++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data = removefn(deque);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;</font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, data ? (<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*)data : <font color="#ff00ff">&quot;NULL&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;addfn addfns[] = { MBdeque_push_back, MBdeque_push_front };<br>
+&nbsp;&nbsp;&nbsp;&nbsp;removefn removefns[] = { MBdeque_pop_back, MBdeque_pop_front };<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;nfns = <font color="#804040"><b>sizeof</b></font>(addfns) / <font color="#804040"><b>sizeof</b></font>(addfn);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBdeque * deque = MBdeque_create();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;a, r;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(a = <font color="#ff00ff">0</font>; a &lt; nfns; a++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(r = <font color="#ff00ff">0</font>; r &lt; nfns; r++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;test(deque, addfns[a], removefns[r]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBdeque_delete(deque);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="source-code"></a>
+<h2>Source code</h2>
+<ul>
+	<li><a href="../source/mbcommon.h.html">mbcommon.h</a>
+	<li><a href="../source/iterator.h.html">iterator.h</a>
+	<li><a href="../source/iterator.c.html">iterator.c</a>
+	<li><a href="../source/dynarray.h.html">dynarray.h</a>
+	<li><a href="../source/dynarray.c.html">dynarray.c</a>
+	<li><a href="../source/deque.h.html">deque.h</a>
+	<li><a href="../source/deque.c.html">deque.c</a>
+</ul>
+<a name="download"></a>
+<h2>Download</h2>
+<p>The following archives contain the full source code, example programs and build instructions for all of the <a href="../data-structures.html">data structures</a>:
+<ul>
+	<li><a href="../downloads/mbds.tar.gz">mbds.tar.gz</a> (27 KB, Linux)
+	<li><a href="../downloads/mbds.zip">mbds.zip</a> (55 KB, Windows)
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="../index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>hashring_example.cpp</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;map&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;string&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iostream&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&quot;consistent.h&quot;</font><br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;SdbmHash<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;<font color="#804040"><b>operator</b></font>()(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;* str) <font color="#2e8b57"><b>const</b></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;hash = <font color="#ff00ff">0</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;c;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;((c = *str++)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hash = c + (hash &lt;&lt; <font color="#ff00ff">6</font>) + (hash &lt;&lt; <font color="#ff00ff">16</font>) - hash;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;hash;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+};<br>
+<br>
+<font color="#2e8b57"><b>class</b></font>&nbsp;CacheServer<br>
+{<br>
+<font color="#804040"><b>public</b></font>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>typedef</b></font>&nbsp;std::map&lt;std::string, std::string&gt; StringMap;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;Put(<font color="#2e8b57"><b>const</b></font>&nbsp;std::string&amp; key, <font color="#2e8b57"><b>const</b></font>&nbsp;std::string&amp; value)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cache_[key] = value;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string Get(<font color="#2e8b57"><b>const</b></font>&nbsp;std::string&amp; key) <font color="#2e8b57"><b>const</b></font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string value;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;StringMap::const_iterator it = cache_.find(key);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(it != cache_.end()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value = it-&gt;second;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;value;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;Remove(<font color="#2e8b57"><b>const</b></font>&nbsp;std::string&amp; key)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;StringMap::iterator it = cache_.find(key);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(it != cache_.end()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cache_.erase(it);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+<font color="#804040"><b>private</b></font>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;StringMap cache_;<br>
+};<br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main()<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>typedef</b></font>&nbsp;std::map&lt;std::string, CacheServer&gt; ServerMap;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ServerMap servers;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Consistent::HashRing&lt;std::string, std::string, SdbmHash&gt; ring(<font color="#ff00ff">4</font>, SdbmHash());<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Create some cache servers</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;servers[<font color="#ff00ff">&quot;cache1.example.com&quot;</font>] = CacheServer();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;servers[<font color="#ff00ff">&quot;cache2.example.com&quot;</font>] = CacheServer();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;servers[<font color="#ff00ff">&quot;cache3.example.com&quot;</font>] = CacheServer();<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Add their host names to the hash ring</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(ServerMap::const_iterator it = servers.begin(); it != servers.end(); ++it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Adding &quot;</font>&nbsp;&lt;&lt; it-&gt;first &lt;&lt; <font color="#ff00ff">&quot; with hash &quot;</font>&nbsp;&lt;&lt; ring.AddNode(it-&gt;first) &lt;&lt; std::endl;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Store some data</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>* fruits[] = {<font color="#ff00ff">&quot;apple&quot;</font>, <font color="#ff00ff">&quot;pear&quot;</font>, <font color="#ff00ff">&quot;banana&quot;</font>, <font color="#ff00ff">&quot;orange&quot;</font>, <font color="#ff00ff">&quot;cherry&quot;</font>, <font color="#ff00ff">&quot;apricot&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>* colours[] = {<font color="#ff00ff">&quot;red&quot;</font>, <font color="#ff00ff">&quot;green&quot;</font>, <font color="#ff00ff">&quot;yellow&quot;</font>, <font color="#ff00ff">&quot;orange&quot;</font>, <font color="#ff00ff">&quot;black&quot;</font>, <font color="#ff00ff">&quot;pink&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numfruits = <font color="#804040"><b>sizeof</b></font>(fruits) / <font color="#804040"><b>sizeof</b></font>(numfruits);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;f = <font color="#ff00ff">0</font>; f &lt; numfruits; f++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string host = ring.GetNode(fruits[f]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Storing &quot;</font>&nbsp;&lt;&lt; fruits[f] &lt;&lt; <font color="#ff00ff">&quot; on server &quot;</font>&nbsp;&lt;&lt; host &lt;&lt; std::endl;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;servers[host].Put(fruits[f], colours[f]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Read it back</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;f = <font color="#ff00ff">0</font>; f &lt; numfruits; f++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string host = ring.GetNode(fruits[f]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string colour = servers[host].Get(fruits[f]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Found &quot;</font>&nbsp;&lt;&lt; fruits[f] &lt;&lt; <font color="#ff00ff">&quot; on server &quot;</font>&nbsp;&lt;&lt; host &lt;&lt; <font color="#ff00ff">&quot; (&quot;</font>&nbsp;&lt;&lt; colour &lt;&lt; <font color="#ff00ff">&quot;)&quot;</font>&nbsp;&lt;&lt; std::endl;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font></body>
+</html>

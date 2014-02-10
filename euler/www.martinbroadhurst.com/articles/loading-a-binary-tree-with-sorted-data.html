@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Loading a binary tree with sorted data</title>
+</head>
+<body>
+<p><a href="../index.html">Martin Broadhurst</a> &gt; <a href="../data-structures.html">Data Structures</a>
+&gt; <a href="binary-tree.html">Binary tree</a>
+<h1>Loading a binary tree with sorted data</h1>
+<h2>Introduction</h2>
+<p>Inserting sorted data into a <a href="binary-tree.html">binary tree</a> causes the tree to become a single long branch called a <i>vine</i>, slanting right if the data is sorted ascending and left if it is descending.
+The result of this is that searches are no better than a sequential search.
+<p>In order to load sorted data and keep the tree perfectly balanced, it is necessary to add the data in the order in which a binary search would visit it.
+In other words, the middle element first, then the middle of the left sub-array, the middle of the right sub-array and so on.
+<h2>Algorithm</h2>
+<p>The algorithm finds the middle of the sorted data, inserts that, and then recurses into the left and right sub-arrays.
+<h2>Implementation</h2>
+<font face="monospace" size="2">
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;MBbinarytree_load_recursive(MBbtnode ** node, <font color="#2e8b57"><b>void</b></font>&nbsp;** list, <font color="#2e8b57"><b>size_t</b></font>&nbsp;size)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(size &gt; <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;left, right, middle = size / <font color="#ff00ff">2</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*node = MBbtnode_create(list[middle]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;left = middle;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;right = size - middle - <font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBbinarytree_load_recursive(&amp;((*node)-&gt;left), list, left);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBbinarytree_load_recursive(&amp;((*node)-&gt;right), &amp;list[middle + <font color="#ff00ff">1</font>], right);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBbinarytree_load(MBbinarytree * tree, <font color="#2e8b57"><b>void</b></font>&nbsp;** list, <font color="#2e8b57"><b>size_t</b></font>&nbsp;size)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBbinarytree_load_recursive(&amp;(tree-&gt;root), list, size);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tree-&gt;count = size;<br>
+}<br>
+<br>
+</font>
+<h2>Example program</h2>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;string.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;binarytree.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*elements[] = {<font color="#ff00ff">&quot;A&quot;</font>, <font color="#ff00ff">&quot;B&quot;</font>, <font color="#ff00ff">&quot;C&quot;</font>, <font color="#ff00ff">&quot;D&quot;</font>,<font color="#ff00ff">&quot;E&quot;</font>,<font color="#ff00ff">&quot;F&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(elements) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBbinarytree *tree;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tree = MBbinarytree_create((MBcmpfn)strcmp);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBbinarytree_load(tree, (<font color="#2e8b57"><b>void</b></font>*)elements, n);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBbinarytree_for_each(tree, (MBforfn)puts);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBbinarytree_delete(tree);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<h2>Source code</h2>
+<ul>
+<li><a href="../source/mbcommon.h.html">mbcommon.h</a>
+<li><a href="../source/iterator.h.html">iterator.h</a>
+<li><a href="../source/iterator.c.html">iterator.c</a>
+<li><a href="../source/slist.h.html">slist.h</a>
+<li><a href="../source/slist.c.html">slist.c</a>
+<li><a href="../source/stack.h.html">stack.h</a>
+<li><a href="../source/stack.c.html">stack.c</a>
+<li><a href="../source/binarytree.h.html">binarytree.h</a>
+<li><a href="../source/binarytree.c.html">binarytree.c</a>
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="../index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

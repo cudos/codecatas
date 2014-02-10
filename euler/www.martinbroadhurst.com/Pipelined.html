@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Pipelined HTTP Client</title>
+</head>
+<body>
+<p><a href="index.html">Martin Broadhurst</a>
+<h1>Pipelined HTTP Client</h1>
+<h2>Introduction</h2>
+<h3>Requests and responses</h3>
+<p>HTTP is a request-response protocol, and this tends to dictate the usage pattern of HTTP client libraries, which goes like this:
+<ol>
+	<li>Prepare a request
+	<li>Send it
+	<li>Parse the response
+	<li>Repeat
+</ol>
+<p>If your application only makes an occasional request, or it is necessary to have the response before sending the next request, this is a reasonable pattern.
+If, however, you just want to send 1000 GETs to download documents from a site, or PUT 1000 files to a server, waiting for and processing the response in between requests is an inefficient use of the HTTP connection.
+<h3>Pipelining</h3>
+<p>Persistent connections are the default in <a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">HTTP 1.1</a>, and the RFC mentions that they enable another usage pattern:
+<blockquote>
+	A client that supports persistent connections MAY &quot;pipeline&quot; its requests (i.e., send multiple requests without waiting for each response). 
+</blockquote>
+<p>One way of doing this would be to send off a stream of requests, and then read all of the responses afterwards. 
+The problem with this is that:
+<ul>
+	<li>The requests or unread responses will be backing up on the server
+	<li>You probably want to know whether requests have succeeded or not as soon as possible
+	<li>The HTTP connection is still only being used in one direction at a time
+</ul>
+<p>A more efficient solution is to send the requests while simultaneously processing the responses.
+This has the effect of giving maximum utilisation of the HTTP connection, and so eliminating the cumulative round trip times.
+<p>In practice this means sending the requests on one thread, while reading the responses on another.
+This requires an event-driven model, in which a callback provided by the requester is called each time a response has been received
+<h3>Considerations</h3>
+<p>Using pipelining introduces some design considerations that do not apply to the request-response pattern:
+<ul>
+	<li>Matching responses to requests
+	<li>Handling failure
+	<li>Communicating between the reader and writer
+</ul>
+<h4>Matching responses to requests</h4>
+<p>Matching responses to requests turns out to be easy, because, as the RFC goes on to say:
+<blockquote>
+	A server MUST send its responses to those requests in the same order that the requests were received.
+</blockquote>
+<p>What this means in practice is that you can keep a queue of requests sent, and, when you receive a response, know that it is for the request at the head of the queue.
+<h4>Handling failure</h4>
+<p>Handling failure is slightly more complicated in a pipelined scenario because failure may not be detected until some time after the request has been sent, and in a different place in code (the event handler).
+<p>There are 3 ways in which a request can fail:
+<ul>
+	<li>The server disconnects before the the request has been sent
+	<li>The request is sent, and an error response is received
+	<li>The request is sent, but no response is received because the server has disconnected
+</ul>
+<p>To deal with the first case, the requester can make a queue of the requests it is going to send in advance.
+Requests are then removed from the queue after sending, so any requests left in the queue on disconnection have not been sent.
+<p>The second case usually requires sending a modified request.
+The new request may be added to the queue to be sent for this session, or may be sent in another session.
+<p>In the third case, it is not known whether the request was received by the server or not.
+It is easy to find out which requests these are, as they are left in the queue of sent requests, as no corresponding response has been received.
+The simplest solution is to send the same request again.
+This should only be done, however, with idempotent methods (GET, HEAD, PUT, DELETE), since in their case if the first request did actually succeed, sending another will have no effect.
+<h4>Communicating between the reader and writer</h4>
+<p>At the very least, the reading thread needs to be able to retrieve the request corresponding to the response it has received, and this request needs to have been stored by the writing thread.
+Since the reader and writer are different threads, the queue of sent requests needs to be protected by a mutex.
+This applies to any other information shared between the writing and reading threads.
+<h2>Pipelined Client</h2>
+<p>This is a pipelined client written in C++ for Linux.
+<h3>HttpClient</h3>
+<p>The <code>HttpClient</code> class encapsulates a connection to a Web host.
+It is passed an object of a class derived from <code>HttpRequester</code>, which has overridden virtual functions to send requests and process the responses.
+<p>Below is a sample program that uses an <code>HttpClient</code> to PUT all of the files in a directory to a CGI program on a Web server, using an <code>HttpRequester</code> subclass called <code>MyPutRequester</code>:
+<div>
+<font face="monospace" size="2">
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>int</b></font>&nbsp;argc, <font color="#2e8b57"><b>char</b></font>&nbsp;**argv)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string directory;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(argc &gt; <font color="#ff00ff">1</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;directory = argv[<font color="#ff00ff">1</font>];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;directory = <font color="#ff00ff">&quot;.&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>try</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MyPutRequester requester(directory);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pipelined::HttpClient client(<font color="#ff00ff">&quot;localhost&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;client.Run(&amp;requester);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>catch</b></font>&nbsp;(std::exception&amp; ex) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cerr &lt;&lt; <font color="#ff00ff">&quot;Exception: &quot;</font>&nbsp;&lt;&lt; ex.what() &lt;&lt; std::endl; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+</div>
+<p><code>HttpClient</code>'s <code>Run</code> method begins by connecting to the server, and finishes when the requester or server closes the connection.
+If there is more work to be done, the <code>Run</code> method can be called again with the same, or a different requester.
+<h3>HttpRequester</h3>
+<p>The <code>HttpRequester</code> base class has three virtual functions, the first two of which must be implemented, and the third is optional:
+<ul>
+	<li><code>Run</code>
+	<li><code>HandleResponse</code>
+	<li><code>HandleFinish</code>
+</ul>
+<h4>Run</h4>
+<p>The <code>Run</code> method sends the requests.
+Sending a request takes the form of calling the following methods in the <code>HttpClient</code>, which is passed as an argument:
+<ul>
+	<li><code>StartRequest</code>
+	<li><code>SendHeader</code>
+	<li><code>EndHeaders</code>
+	<li><code>Write</code>
+</ul>
+<p><code>StartRequest</code> takes a verb such as PUT, and a URL, and sends the start line of the request and the Host header.
+<p><code>SendHeader</code> takes a header name and value and sends them in the name: value format.
+<p><code>EndHeaders</code> sends the blank line that marks the end of the headers.
+<p>The <code>Write</code> method is used to send raw bytes, such as when sending an entity body.
+It is the requester's responsibility to send the correct Content-Length header before the body.
+<p>As well as sending the requests, the <code>Run</code> method can be used to store any information about them that might be needed when processing the responses.
+<h4>HandleResponse</h4>
+<p><code>HandleResponse</code> is called every time a response is received.
+It is given:
+<ul>
+<li>The request corresponding to the response
+<li>An <code>HttpStatus</code> object containing the information in the status line
+<li>A map of the response headers
+<li>A stream containing the entity body
+</ul>
+<p>Here is an example of <code>HandleResponse</code> displaying the response information and adding failed requests to a vector:
+<div>
+<font face="monospace" size="2">
+<font color="#2e8b57"><b>void</b></font>&nbsp;MyPutRequester::HandleResponse(<font color="#2e8b57"><b>const</b></font>&nbsp;std::string&amp; request, <font color="#2e8b57"><b>const</b></font>&nbsp;Pipelined::HttpStatus&amp; status,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;std::multimap&lt;std::string, std::string&gt;&amp; headers, Pipelined::Stream* body)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Request</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; request &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Status line</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; status.version &lt;&lt; <font color="#ff00ff">&quot; &quot;</font>&nbsp;&lt;&lt; status.code &lt;&lt; <font color="#ff00ff">&quot; &quot;</font>&nbsp;&lt;&lt; status.message &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Headers</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(std::multimap&lt;std::string, std::string&gt;::const_iterator it = headers.begin(); it != headers.end(); ++it) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; it-&gt;first &lt;&lt; <font color="#ff00ff">&quot;: &quot;</font>&nbsp;&lt;&lt; it-&gt;second &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Read the entity body</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;buf[BUF_SIZE];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(!body-&gt;Eof()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;bytes_read = body-&gt;Read(buf, BUF_SIZE);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(bytes_read &gt; <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;</font><font color="#6a5acd">%.*s</font><font color="#ff00ff">&quot;</font>, bytes_read, buf);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>&nbsp;&lt;&lt; std::endl;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// If the request didn't succeed, add it to the failed vector</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(status.code &gt; <font color="#ff00ff">299</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;failed_.push_back(request);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+</font>
+</div>
+<h4>HandleFinish</h4>
+<p><code>HandleFinish</code> is called after the connection has been closed.
+The main reason to implement <code>HandleFinish</code> is to retrieve the queue of requests for which responses have not been received.
+This is passed to <code>HandleResponse</code> as an argument.
+<div>
+<font face="monospace" size="2">
+<font color="#2e8b57"><b>void</b></font>&nbsp;MyPutRequester::HandleFinish(std::queue&lt;std::string&gt;&amp; requests)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Requests that did not get a reply</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!requests.empty()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;The following requests did not receive a reply:</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(!requests.empty()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; requests.front() &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;requests.pop();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}
+</font>
+</div>
+<h2>Source code</h2>
+<p>In addition to the client, I've written an example program that PUTs all of the files in a specified directory to a server.
+The response handler writes the response to standard output.
+<p>I have also written a simple CGI that allows PUTs and stores the files, and will also allow GETs to view them.
+<p>You can browse the source code here:
+<ul>
+<li><a href="source/httpclient.h.html">httpclient.h</a>
+<li><a href="source/httpclient.cpp.html">httpclient.cpp</a>
+<li><a href="source/putclient.cpp.html">putclient.cpp</a>
+<li><a href="source/put.cpp.html">put.cpp</a>
+</ul>
+<p>Here is a compressed tar archive containing the source code and a makefile:
+<ul>
+<li><a href="downloads/pipelined.tar.gz">pipelined.tar.gz</a>
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

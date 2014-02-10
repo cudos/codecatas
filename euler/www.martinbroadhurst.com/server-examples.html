@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Server Examples</title>
+</head>
+<body>
+<p><a href="index.html">Martin Broadhurst</a>
+<h1>Server Examples</h1>
+<h2>Preface</h2>
+<p>This is a collection of example network server implementations for Linux and Windows.
+You can use these as a starting point for your own server implementation.
+<h2>Contents</h2>
+<ul>
+<li><a href="server-examples.html#simple-server">Simple server</a></li>
+<li><a href="server-examples.html#forked-server">Forked server</a></li>
+<li><a href="server-examples.html#threaded-server">Threaded server</a></li>
+<li><a href="server-examples.html#select-server">Select server</a></li>
+</ul>
+<a name="simple-server"></a>
+<h2>Simple server</h2>
+<p>This server can only handle one client at a time, with up to 10 clients (the <var>backlog</var> argument to <code>listen</code>), being allowed to wait before connections are refused.
+This is suitable for a single-user desktop server or one in which connections are very short-lived.
+<ul>
+<li><a href="source/simple-server.c.html">simple-server.c</a>
+<li><a href="source/simple-server-windows.c.html">simple-server-windows.c</a>
+</ul>
+<a name="forked-server"></a>
+<h2>Forked server</h2>
+<p>This server uses the <code>fork</code> function to create a new process for each client connection, permitting as many clients as resources will allow.
+It only works on Linux, and is best suited to server computers with 1 or 2 cores.
+<p>Notice that when using <code>fork</code> it is necessary to set up a signal handler for <var>SIGCHLD</var> in order to reap zombie processes.
+<ul>
+<li><a href="source/forked-server.c.html">forked-server.c</a>
+</ul>
+<a name="threaded-server"></a>
+<h2>Threaded server</h2>
+<p>This server creates a new thread for each client connection.
+This also permits as many connections as resources will allow.
+It is less resource intensive than forking.
+It is the only option for multiprocessing on Windows, and on Linux is best suited to server computers with more than 2 cores.
+<p>When using multiple threads it is necessary to use synchronisation locks when accessing any shared application state, and also when calling many socket API functions.
+<ul>
+<li><a href="source/threaded-server.c.html">threaded-server.c</a>
+<li><a href="source/threaded-server-windows.c.html">threaded-server-windows.c</a>
+</ul>
+<a name="select-server"></a>
+<h2>Select server</h2>
+<p>This server uses the <code>select</code> function to determine when sockets are ready for reading, and when clients have disconnected.
+It is not as fast as forking or using threads, and cannot exploit multi-cores, but is less resource intensive, and so will scale up to far more connections.
+<p>In order to prevent the handling of individual clients from starving others, it may necessary to limit how much data is read per client in response to each <code>select</code> call.
+Additionally, this example assumes that calls to <code>recv</code> will not block.
+If they can block, it may be necessary to put the socket in non-blocking mode using <code>fcntl</code> with the <var>F_SETFL</var> command and the <var>O_NONBLOCK</var> flag.
+<ul>
+<li><a href="source/select-server.c.html">select-server.c.html</a>
+<li><a href="source/select-server-windows.c.html">select-server-windows.c.html</a>
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>deque.h</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;deque.h - a deque as a dynamic array of fixed-size arrays</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst </font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;www.martinbroadhurst.com</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#ifndef DEQUE_H</font><br>
+<font color="#a020f0">#define DEQUE_H</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;dynarray.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;mbcommon.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iterator.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBdynarray *arrays;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;arraysize;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;front;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;back;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;firstempty;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;lastempty;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;count;<br>
+} MBdeque;<br>
+<br>
+MBdeque * MBdeque_create(<font color="#2e8b57"><b>void</b></font>);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBdeque_delete(MBdeque * deque);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBdeque_push_front(MBdeque * deque, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBdeque_push_back(MBdeque * deque, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBdeque_pop_front(MBdeque * deque);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBdeque_pop_back(MBdeque * deque);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBdeque_get_at(<font color="#2e8b57"><b>const</b></font>&nbsp;MBdeque *deque, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;index);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBdeque_set_at(MBdeque *deque, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;index, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBdeque_peek_front(<font color="#2e8b57"><b>const</b></font>&nbsp;MBdeque * deque);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBdeque_peek_back(<font color="#2e8b57"><b>const</b></font>&nbsp;MBdeque * deque);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBdeque_for_each(<font color="#2e8b57"><b>const</b></font>&nbsp;MBdeque * deque, MBforfn forfn);<br>
+MBiterator * MBdeque_iterator(<font color="#2e8b57"><b>const</b></font>&nbsp;MBdeque * deque);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBdeque_get_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBdeque *deque);<br>
+<br>
+<font color="#a020f0">#endif</font>&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;DEQUE_H </font><font color="#0000ff">*/</font><br>
+</font></body>
+</html>

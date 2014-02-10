@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Counting nodes in a binary tree recursively</title>
+</head>
+<body>
+<p><a href="../index.html">Martin Broadhurst</a> &gt; <a href="../data-structures.html">Data Structures</a>
+&gt; <a href="binary-tree.html">Binary tree</a>
+<h1>Counting nodes in a binary tree recursively</h1>
+<h2>Introduction</h2>
+<p>The number of nodes in a <a href="binary-tree.html">binary tree</a> is the number of nodes in the root's left subtree, plus the number of nodes in its right subtree, plus one (for the root itself).
+<p>This lends itself to a simple recursive algorithm for counting the nodes in a binary tree.
+<h2>Implementation</h2>
+<font face="monospace" size="2">
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBbinarytree_count_recursive(<font color="#2e8b57"><b>const</b></font>&nbsp;MBbtnode *root)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;count = <font color="#ff00ff">0</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(root != <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;count = <font color="#ff00ff">1</font>&nbsp;+ MBbinarytree_count_recursive(root-&gt;left) + MBbinarytree_count_recursive(root-&gt;right);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;count;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBbinarytree_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBbinarytree *tree)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;MBbinarytree_count_recursive(tree-&gt;root);<br>
+}<br>
+</font>
+<h2>Example program</h2>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;string.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;binarytree.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBbinarytree * tree;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;* elements[] = {<font color="#ff00ff">&quot;D&quot;</font>, <font color="#ff00ff">&quot;B&quot;</font>, <font color="#ff00ff">&quot;C&quot;</font>, <font color="#ff00ff">&quot;F&quot;</font>, <font color="#ff00ff">&quot;E&quot;</font>, <font color="#ff00ff">&quot;G&quot;</font>, <font color="#ff00ff">&quot;A&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(elements) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;i;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;tree = MBbinarytree_create((MBcmpfn)strcmp);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(i = <font color="#ff00ff">0</font>; i &lt; n; i++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBbinarytree_add(tree, elements[i]);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBbinarytree_for_each(tree, (MBforfn)puts);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Size is </font><font color="#6a5acd">%d</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, MBbinarytree_count(tree));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBbinarytree_delete(tree);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+<br>
+<br>
+</font>
+<h2>Source code</h2>
+<ul>
+<li><a href="../source/mbcommon.h.html">mbcommon.h</a>
+<li><a href="../source/iterator.h.html">iterator.h</a>
+<li><a href="../source/iterator.c.html">iterator.c</a>
+<li><a href="../source/slist.h.html">slist.h</a>
+<li><a href="../source/slist.c.html">slist.c</a>
+<li><a href="../source/stack.h.html">stack.h</a>
+<li><a href="../source/stack.c.html">stack.c</a>
+<li><a href="../source/binarytree.h.html">binarytree.h</a>
+<li><a href="../source/binarytree.c.html">binarytree.c</a>
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="../index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

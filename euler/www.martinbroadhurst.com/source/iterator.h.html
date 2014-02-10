@@ -1,0 +1,34 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>iterator.h</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;iterator.h - an iterator interface type</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst </font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;www.martinbroadhurst.com</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#ifndef ITERATOR_H</font><br>
+<font color="#a020f0">#define ITERATOR_H</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;mbcommon.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;MBiterator {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;body;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBgetfn&nbsp;&nbsp;&nbsp;&nbsp; getfn;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBdeletefn&nbsp;&nbsp;deletefn;<br>
+};<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBiterator MBiterator;<br>
+<br>
+MBiterator * MBiterator_create(<font color="#2e8b57"><b>void</b></font>&nbsp;*body, MBgetfn getfn, MBdeletefn deletefn);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; MBiterator_delete(MBiterator *it);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;*&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; MBiterator_get(MBiterator *it);<br>
+<br>
+<font color="#a020f0">#endif</font>&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;ITERATOR_H </font><font color="#0000ff">*/</font><br>
+<br>
+</font></body>
+</html>

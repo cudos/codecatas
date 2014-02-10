@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>listarray.h</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;listarray.h - a doubly-linked list embedded in an array</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst </font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;www.martinbroadhurst.com</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#ifndef LISTARRAY_H</font><br>
+<font color="#a020f0">#define LISTARRAY_H</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;limits.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;mbcommon.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iterator.h&gt;</font><br>
+<br>
+<font color="#a020f0">#define MBLISTARRAY_NIL </font><font color="#ff00ff">UINT_MAX</font><br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;MBlanode {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;next;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;previous;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;* data;<br>
+};<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBlanode MBlanode;<br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;MBlistarray {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBlanode* buf;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;len;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;count;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;height;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;head;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;tail;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;bin;<br>
+};<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBlistarray MBlistarray;<br>
+<br>
+MBlistarray * MBlistarray_create(<font color="#2e8b57"><b>void</b></font>);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBlistarray_empty(MBlistarray * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBlistarray_delete(MBlistarray * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBlistarray_add_head(MBlistarray * list, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBlistarray_add_tail(MBlistarray * list, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBlistarray_insert_before(MBlistarray *list, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;node, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBlistarray_insert_after(MBlistarray *list, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;node, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBlistarray_remove_head(MBlistarray * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBlistarray_remove_tail(MBlistarray * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBlistarray_remove_node(MBlistarray * list, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;node);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBlistarray_for_each(<font color="#2e8b57"><b>const</b></font>&nbsp;MBlistarray * list, MBforfn forfn);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBlistarray_get_head(<font color="#2e8b57"><b>const</b></font>&nbsp;MBlistarray * list);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBlistarray_get_tail(<font color="#2e8b57"><b>const</b></font>&nbsp;MBlistarray * list);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBlistarray_get_data(<font color="#2e8b57"><b>const</b></font>&nbsp;MBlistarray * list, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;node);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBlistarray_get_next(<font color="#2e8b57"><b>const</b></font>&nbsp;MBlistarray *list, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;node);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBlistarray_get_previous(<font color="#2e8b57"><b>const</b></font>&nbsp;MBlistarray *list, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;node);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBlistarray_get_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBlistarray * list);<br>
+MBiterator * MBlistarray_iterator(<font color="#2e8b57"><b>const</b></font>&nbsp;MBlistarray *list);<br>
+<br>
+<font color="#a020f0">#endif</font>&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;MBLISTARRAY_H </font><font color="#0000ff">*/</font><br>
+</font></body>
+</html>

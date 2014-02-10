@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>TCP Proxy</title>
+</head>
+<body>
+<p><a href="index.html">Martin Broadhurst</a>
+<h1>TCP Proxy</h1>
+<p>This is about as simple as a TCP proxy can be.
+It accepts one client connection at a time, but you can easily allow it to accept more by using the methods demonstrated in the <a href="server-examples.html">server examples</a>.
+You can use it as a starting point to write a more sophisticated proxy, that, for example, writes the transfers to a file, or modifies the data being exchanged.
+<p>The thing to remember when writing a proxy is that you need to call <code>select</code> before every call to <code>read</code> or <code>recv</code>, unless you know how many more bytes there are.
+This is because if there are no more bytes left, <code>read</code> and <code>recv</code> will block, which will cause the proxy to freeze. 
+<code>read</code> and <code>recv</code> only return <var>0</var> when the peer has disconnected.
+<ul>
+	<li><a href="source/tcpproxy.c.html">tcpproxy.c</a>
+	<li><a href="source/tcpproxy-windows.c.html">tcpproxy-windows.c</a>
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

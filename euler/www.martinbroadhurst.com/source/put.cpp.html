@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>put.cpp</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">//</font><br>
+<font color="#0000ff">//&nbsp;&nbsp;put.cpp - a CGI allowing PUTs and GETs</font><br>
+<font color="#0000ff">//&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst </font><br>
+<font color="#0000ff">//&nbsp;&nbsp;www.martinbroadhurst.com</font><br>
+<font color="#0000ff">//</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;string&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iostream&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;cstdio&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;cstdlib&gt;</font>&nbsp;<font color="#0000ff">// getenv, atoi</font><br>
+<br>
+<font color="#a020f0">#define BUF_SIZE </font><font color="#ff00ff">4096</font><br>
+<font color="#a020f0">#define UPLOAD_DIR </font><font color="#ff00ff">&quot;/home/martin/upload&quot;</font><font color="#a020f0">&nbsp;</font><font color="#0000ff">// Change to your own Apache-writable directory</font><br>
+<br>
+<font color="#2e8b57"><b>namespace</b></font>&nbsp;<br>
+{<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;handle_get(<font color="#2e8b57"><b>const</b></font>&nbsp;std::string&amp; path_info)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>FILE</b></font>&nbsp;*fptr;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string path(UPLOAD_DIR);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;path += path_info;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;((fptr = fopen(path.c_str(), <font color="#ff00ff">&quot;r&quot;</font>)) != <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;buf[BUF_SIZE];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;bytes_read;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string content_type = <font color="#ff00ff">&quot;application/octet-stream&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;dot = path_info.rfind(<font color="#ff00ff">&quot;.&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(dot != path_info.npos &amp;&amp; dot != path_info.length() - <font color="#ff00ff">1</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string extension = path_info.substr(dot + <font color="#ff00ff">1</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(extension == <font color="#ff00ff">&quot;html&quot;</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;content_type = <font color="#ff00ff">&quot;text/html&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(extension == <font color="#ff00ff">&quot;txt&quot;</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;content_type = <font color="#ff00ff">&quot;text/plain&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(extension == <font color="#ff00ff">&quot;xml&quot;</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;content_type = <font color="#ff00ff">&quot;application/xml&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Content-Type: &quot;</font>&nbsp;&lt;&lt; content_type &lt;&lt; <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;((bytes_read = fread(buf, <font color="#ff00ff">1</font>, BUF_SIZE, fptr))) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fwrite(buf, <font color="#ff00ff">1</font>, bytes_read, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fclose(fptr);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Status: 404</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>; <font color="#0000ff">// Not Found</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;write_file(<font color="#2e8b57"><b>size_t</b></font>&nbsp;len, <font color="#2e8b57"><b>FILE</b></font>&nbsp;*fptr)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;buf[BUF_SIZE];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;bytes_read;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;((bytes_read = fread(buf, <font color="#ff00ff">1</font>, BUF_SIZE, <font color="#ff00ff">stdin</font>))) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fwrite(buf, <font color="#ff00ff">1</font>, bytes_read, fptr);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;handle_put(<font color="#2e8b57"><b>const</b></font>&nbsp;std::string&amp; path_info, <font color="#2e8b57"><b>size_t</b></font>&nbsp;len)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(len &gt; <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>FILE</b></font>&nbsp;*fptr;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string path(UPLOAD_DIR);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path += path_info;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>bool</b></font>&nbsp;existing = <font color="#ff00ff">false</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;((fptr = fopen(path.c_str(), <font color="#ff00ff">&quot;r&quot;</font>)) != <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;existing = <font color="#ff00ff">true</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fclose(fptr);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;((fptr = fopen(path.c_str(), <font color="#ff00ff">&quot;w&quot;</font>)) != <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;write_file(len, fptr);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fclose(fptr);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string action;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(existing) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Status: 200</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>; <font color="#0000ff">// OK </font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;action = <font color="#ff00ff">&quot;replace&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Status: 201</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>; <font color="#0000ff">// Created</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;action = <font color="#ff00ff">&quot;create&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Content-Type: text/html</font><font color="#6a5acd">\n\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::string message = <font color="#ff00ff">&quot;File was &quot;</font>&nbsp;+ action + <font color="#ff00ff">&quot;d successfully&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;&lt;html&gt;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&lt;head&gt;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&lt;title&gt;&quot;</font>&nbsp;&lt;&lt; message &lt;&lt; <font color="#ff00ff">&quot;&lt;/title&gt;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&lt;/head&gt;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#ff00ff">&quot;&lt;body&gt;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&lt;h1&gt;&quot;</font>&nbsp;&lt;&lt; message &lt;&lt; <font color="#ff00ff">&quot;&lt;/h1&gt;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&lt;p&gt;&quot;</font>&nbsp;&lt;&lt; path &lt;&lt; <font color="#ff00ff">&quot;&lt;/p&gt;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&lt;/body&gt;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&lt;/html&gt;&quot;</font>; <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Status: 500</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>; <font color="#0000ff">// Internal Server Error </font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Content-Type: text/html</font><font color="#6a5acd">\n\n</font><font color="#ff00ff">&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;&lt;html&gt;Couldn't create file &quot;</font>&nbsp;&lt;&lt; path &lt;&lt; <font color="#ff00ff">&quot;&lt;/html&gt;&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Status: 411</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>; <font color="#0000ff">// Length Required </font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+};<br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main()<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*var;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string request_method;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string path_info;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;content_length = <font color="#ff00ff">0L</font>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;var = getenv(<font color="#ff00ff">&quot;REQUEST_METHOD&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(var) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;request_method = var;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;var = getenv(<font color="#ff00ff">&quot;PATH_INFO&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(var) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;path_info = var;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(request_method.length() &amp;&amp; path_info.length()) { <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;var = getenv(<font color="#ff00ff">&quot;CONTENT_LENGTH&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(var) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;content_length = atol(var);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(request_method == <font color="#ff00ff">&quot;GET&quot;</font>)&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;handle_get(path_info);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(request_method == <font color="#ff00ff">&quot;PUT&quot;</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;handle_put(path_info, content_length);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Status: 405</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Method not allowed </font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Allow: GET,PUT</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>; <font color="#0000ff">// Must send this after a 405</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;std::cout &lt;&lt; <font color="#ff00ff">&quot;Status: 400</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>; <font color="#0000ff">// Bad request </font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::cout.flush();<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font></body>
+</html>

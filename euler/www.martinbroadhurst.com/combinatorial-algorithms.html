@@ -1,0 +1,864 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Combinatorial Algorithms</title>
+<style type="text/css">
+	.algorithm { color: OrangeRed  }
+	.code { font-family: monospace, serif, courier; font-size: 10pt; padding-top: 4px; padding-bottom: 4px; white-space: pre }
+	.algorithm-list { padding-top: 4px; padding-bottom: 4px }
+</style>
+</head>
+<body>
+<p><a href="index.html">Martin Broadhurst</a>
+<h1>Combinatorial Algorithms</h1>
+<h2>Contents</h2>
+<ul>
+<li><a href="combinatorial-algorithms.html#introduction">Introduction</a></li>
+<li><a href="combinatorial-algorithms.html#utilities">Utilities</a></li>
+<li><a href="combinatorial-algorithms.html#algorithms">Algorithms</a>
+<ul class="algorithm-list">
+<li><a class="algorithm" href="combinatorial-algorithms.html#power-set">Power set</a></li>
+<li><a class="algorithm" href="combinatorial-algorithms.html#power-set-power-set">Power set of each set in the power set</a></li>
+<li><a class="algorithm" href="combinatorial-algorithms.html#partitions">Partitions</a></li>
+<li><a class="algorithm" href="combinatorial-algorithms.html#cartesian-product">Cartesian product</a></li>
+<li><a class="algorithm" href="combinatorial-algorithms.html#permutations">Permutations</a></li>
+<li><a class="algorithm" href="combinatorial-algorithms.html#combinations">Combinations</a></li>
+<li><a class="algorithm" href="combinatorial-algorithms.html#multicombinations">Multicombinations</a></li>
+<li><a class="algorithm" href="combinatorial-algorithms.html#combinations-of-a-multiset">Combinations of a multiset</a></li>
+<li><a class="algorithm" href="combinatorial-algorithms.html#power-set-of-a-multiset">Power set of a multiset</a></li>
+<li><a class="algorithm" href="combinatorial-algorithms.html#k-permutations">K-permutations</a></li>
+</ul>
+<li><a href="combinatorial-algorithms.html#source-code">Source code</a></li>
+</ul>
+<a name="introduction"></a>
+<h2>Introduction</h2>
+<p>This is a collection of combinatorial algorithms I've written in C.
+<a name="utilities"></a>
+<h2>Utilities</h2>
+<p>As well as the algorithms, I have provided some utilities for printing collections. The examples should make their use clear. They are:
+<dl>
+	<dt class="code">void MBprint_array(const unsigned int *ar, size_t len, FILE *fptr);</dt>
+	<dd>Print an array of unsigned integers</dd>
+	<dt class="code">void MBprint_set(const unsigned int *ar, size_t len, const void **elements, 
+			const char *brackets, MBprintfn print, FILE *fptr);</dt>
+	<dd>Print a set represented as an array of integer indices by looking them up in an array of values</dd>
+	<dt class="code">void MBprint_subset(const unsigned int *ar, size_t len, const void **elements,
+   			MBprintfn print, FILE *fptr);</dt>
+	<dd>Print a subset represented by a characteristic vector by getting the values from a parent set array</dd>
+	<dt class="code">void MBprint_partition(const unsigned int *ar, size_t len, 
+			const void **elements, MBprintfn print, FILE *fptr);</dt>
+	<dd>Print a partition represented by an array of integers as a set of sets by looking them up in a parent set array of values</dd>
+	<dt class="code">void MBprint_multiset_subset(const unsigned int *ar, size_t len, 
+			const void **elements, MBprintfn print, FILE *fptr)</dt>
+	<dd>Print a subset of a multiset represented by a vector of occurrence counts by getting the values from a parent muliset array</dd>
+	<dt class="code">void MBprint_n_tuple(const unsigned int *ar, size_t len,
+        	const size_t *sizes, const void ***variables,
+        	MBprintfn print, FILE *fptr)</dt>
+	<dd>Prints an ordered n-tuple represented by a vector of indices by getting the values from a set of sets</dd>
+</dl>
+<p>The utilities are in <a href="source/comb-util.c.html">comb-util.c</a>.
+<a name="algorithms"></a>
+<h2>Algorithms</h2>
+<a name="power-set"></a>
+<h3 class="algorithm">Power set</h3>
+<h4>Introduction</h4>
+<p>The power set is the set of all subsets of a set.
+<p>For example, the power set of the set {a, b, c} consists of the sets:</p>
+{}<br>
+{a}<br>
+{b}<br>
+{c}<br>
+{a, b}<br>
+{a, c}<br>
+{b, c}<br>
+{a, b, c}<br>
+<p>Note that:
+<ul>
+<li>The empty set {} is in the power set
+<li>The set itself is in the power set
+</ul>
+<p>The set of all subsets of a particular size, or k-subsets, are <a href="combinatorial-algorithms.html#combinations">combinations</a>.
+<h4>Power set algorithm</h4>
+<p>A subset can be represented as an array of boolean values of the same size as the set, called a <i>characteristic vector</i>.
+Each boolean value indicates whether the corresponding element in the set is present or absent in the subset.
+<p>This gives following correspondences for the set {a, b, c}:</p>
+[0, 0, 0] = {}<br>
+[1, 0, 0] = {a}<br>
+[0, 1, 0] = {b}<br>
+[0, 0, 1] = {c}<br>
+[1, 1, 0] = {a, b}<br>
+[1, 0, 1] = {a, c}<br>
+[0, 1, 1] = {b, c}<br>
+[1, 1, 1] = {a, b, c}<br>
+<p>The algorithm then simply needs to produce the arrays shown above.
+One could just count in binary, but this would not produce the subsets in a sensible order.
+<p>To produce the arrays in the above order (by length, then lexicographic), at each step:
+<ol>
+	<li>Find the first 1 with a 0 on its right.
+	<li>Move it right, replacing it with a 0.
+	<li>If there are no 1s to move, add another 1 and put them all at the beginning.
+</ol>
+<p>Note the the third step handles the case where there are not yet any 1s.
+<h4>Implementation</h4>
+<p><a href="source/subset.c.html">subset.c</a>
+<h4>Examples</h4>
+<p>The following program produces the characteristic vectors for the power set of a 3-set:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;subset.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;ar[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(ar) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_array(ar, n, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_subset(ar, n));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<p>The following program prints the subsets by using the characteristic vector to retrieve the elements from the parent set:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;subset.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;ar[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*elements[] = {<font color="#ff00ff">&quot;a&quot;</font>, <font color="#ff00ff">&quot;b&quot;</font>, <font color="#ff00ff">&quot;c&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(ar) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_subset(ar, n, (<font color="#2e8b57"><b>void</b></font>*)elements, (MBprintfn)fputs, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_subset(ar, n));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="power-set-power-set"></a>
+<h3 class="algorithm">Power set of each set in the power set</h3>
+<h4>Introduction</h4>
+<p>This algorithm generates, for each subset in the power set, the power set of that subset.
+<h4>Algorithm</h4>
+<p>The algorithm uses a vector containing as many elements as the original set, and counts in base 3 from all zeroes to all twos.
+<p>This can then be interpreted for each element as follows:
+<ul>
+	<li>0 - Not present in the subset
+	<li>1 - Present in the subset and in this subset of it
+	<li>2 - Present in the subset, but not this subset of it
+</ul>
+<p>The following output shows the correspondence between the vector, the subset, and its subset:</p>
+[0, 0, 1] = {c} {c}<br>
+[0, 0, 2] = {c} {}<br>
+[0, 1, 0] = {b} {b}<br>
+[0, 1, 1] = {b, c} {b, c}<br>
+[0, 1, 2] = {b, c} {b}<br>
+[0, 2, 0] = {b} {}<br>
+[0, 2, 1] = {b, c} {c}<br>
+[0, 2, 2] = {b, c} {}<br>
+[1, 0, 0] = {a} {a}<br>
+[1, 0, 1] = {a, c} {a, c}<br>
+[1, 0, 2] = {a, c} {a}<br>
+[1, 1, 0] = {a, b} {a, b}<br>
+[1, 1, 1] = {a, b, c} {a, b, c}<br>
+[1, 1, 2] = {a, b, c} {a, b}<br>
+[1, 2, 0] = {a, b} {a}<br>
+[1, 2, 1] = {a, b, c} {a, c}<br>
+[1, 2, 2] = {a, b, c} {a}<br>
+[2, 0, 0] = {a} {}<br>
+[2, 0, 1] = {a, c} {c}<br>
+[2, 0, 2] = {a, c} {}<br>
+[2, 1, 0] = {a, b} {b}<br>
+[2, 1, 1] = {a, b, c} {b, c}<br>
+[2, 1, 2] = {a, b, c} {b}<br>
+[2, 2, 0] = {a, b} {}<br>
+[2, 2, 1] = {a, b, c} {c}<br>
+[2, 2, 2] = {a, b, c} {}<br>
+<h4>Implementation</h4>
+<p><a href="source/subset-subset.c.html">subset-subset.c</a>
+<h4>Example</h4>
+<p>The following program produces the output shown above:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;subset-subset.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;ar[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>, <font color="#ff00ff">1</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*variables[] = {<font color="#ff00ff">&quot;a&quot;</font>, <font color="#ff00ff">&quot;b&quot;</font>, <font color="#ff00ff">&quot;c&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;len = <font color="#804040"><b>sizeof</b></font>(ar) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_array(ar, len, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fputs(<font color="#ff00ff">&quot; = &quot;</font>, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_subset_subset(ar, len, (<font color="#2e8b57"><b>void</b></font>*)variables, (MBprintfn)puts, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_subset_subset(ar, len));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="partitions"></a>
+<h3 class="algorithm">Partitions</h3>
+<h4>Introduction</h4>
+<p>A partition of a set is a division of it into disjoint subsets whose union is the set itself.
+<p>For example, the partitions of the set {a, b, c, d} are:</p>
+{{a, b, c, d}}<br>
+{{a, b, c}, {d}}<br>
+{{a, b, d}, {c}}<br>
+{{a, b}, {c, d}}<br>
+{{a, b}, {c}, {d}}<br>
+{{a, c, d}, {b}}<br>
+{{a, c}, {b, d}}<br>
+{{a, c}, {b}, {d}}<br>
+{{a, d}, {b, c}}<br>
+{{a}, {b, c, d}}<br>
+{{a}, {b, c}, {d}}<br>
+{{a, d}, {b}, {c}}<br>
+{{a}, {b, d}, {c}}<br>
+{{a}, {b}, {c, d}}<br>
+{{a}, {b}, {c}, {d}}<br>
+<h4>Representing partitions</h4>
+<p>The scheme I am using is as follows: a partition is represented by an array of the same size as the set, and each element in the array is an integer specifying the subset in the partition in which the corresponding element occurs.
+For example, the array [0, 0, 0, 0] indicates that every element occurs in set 0, the first set, i.e., the partition {{a, b, c, d}}, while the array [0, 1, 2, 3] puts every element in its own set, i.e., the partition {{a}, {b}, {c}, {d}}.
+<p>The correspondences for the partitions of a 4-set are as follows:</p>
+[0, 0, 0, 0] = {{a, b, c, d}}<br>
+[0, 0, 0, 1] = {{a, b, c}, {d}}<br>
+[0, 0, 1, 0] = {{a, b, d}, {c}}<br>
+[0, 0, 1, 1] = {{a, b}, {c, d}}<br>
+[0, 0, 1, 2] = {{a, b}, {c}, {d}}<br>
+[0, 1, 0, 0] = {{a, c, d}, {b}}<br>
+[0, 1, 0, 1] = {{a, c}, {b, d}}<br>
+[0, 1, 0, 2] = {{a, c}, {b}, {d}}<br>
+[0, 1, 1, 0] = {{a, d}, {b, c}}<br>
+[0, 1, 1, 1] = {{a}, {b, c, d}}<br>
+[0, 1, 1, 2] = {{a}, {b, c}, {d}}<br>
+[0, 1, 2, 0] = {{a, d}, {b}, {c}}<br>
+[0, 1, 2, 1] = {{a}, {b, d}, {c}}<br>
+[0, 1, 2, 2] = {{a}, {b}, {c, d}}<br>
+[0, 1, 2, 3] = {{a}, {b}, {c}, {d}}<br>
+<h4>Partition algorithm</h4>
+<p>Having established how to represent partitions, the algorithm simply needs to produce the arrays shown above.
+At each step:
+<ol>
+<li>Find the rightmost element that is no more than any element to its left.
+<li>Increment it.
+<li>Set all of the elements after it to 0.
+</ol>
+<h4>Implementation</h4>
+<p><a href="source/partition.c.html">partition.c</a>
+<h4>Examples</h4>
+<p>The following program outputs the partition arrays for a 4-set:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;partition.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numbers[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;len = <font color="#804040"><b>sizeof</b></font>(numbers) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_array(numbers, len, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_partition(numbers, len));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<p>The following program prints the partitions by converting the arrays into sets of subsets:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;partition.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;ar[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*elements[] = {<font color="#ff00ff">&quot;a&quot;</font>, <font color="#ff00ff">&quot;b&quot;</font>, <font color="#ff00ff">&quot;c&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(ar) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_partition(ar, n, (<font color="#2e8b57"><b>void</b></font>*)elements, (MBprintfn)fputs, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_partition(ar, n));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="cartesian-product"></a>
+<h3 class="algorithm">Cartesian product</h3>
+<h4>Introduction</h4>
+<p>The cartesian product of <var>n</var> sets is the set of ordered n-tuples containing one element from each set.
+<p>For example, the cartesian product of the sets {a, b}, {p, q, r} and {w, x, y, z} is:
+<div class="output">
+[a, p, w]<br>
+[a, p, x]<br>
+[a, p, y]<br>
+[a, p, z]<br>
+[a, q, w]<br>
+[a, q, x]<br>
+[a, q, y]<br>
+[a, q, z]<br>
+[a, r, w]<br>
+[a, r, x]<br>
+[a, r, y]<br>
+[a, r, z]<br>
+[b, p, w]<br>
+[b, p, x]<br>
+[b, p, y]<br>
+[b, p, z]<br>
+[b, q, w]<br>
+[b, q, x]<br>
+[b, q, y]<br>
+[b, q, z]<br>
+[b, r, w]<br>
+[b, r, x]<br>
+[b, r, y]<br>
+[b, r, z]<br>
+</div>
+<h4>Cartesian product algorithm</h4>
+<p>The algorithm uses an array of <var>n</var> integers.
+Each number in the array represents the index number within the corresponding set of that element.
+<p>The algorithm then simply needs to count upwards from <var>n</var> zeroes, with the cardinality of each set determining when a digit rolls over.
+<p>For example, these are the correspondences between the array and the n-tuple for the sets in the example:</p>
+<div class="output">
+[0, 0, 0] = [a, p, w]<br>
+[0, 0, 1] = [a, p, x]<br>
+[0, 0, 2] = [a, p, y]<br>
+[0, 0, 3] = [a, p, z]<br>
+[0, 1, 0] = [a, q, w]<br>
+[0, 1, 1] = [a, q, x]<br>
+[0, 1, 2] = [a, q, y]<br>
+[0, 1, 3] = [a, q, z]<br>
+[0, 2, 0] = [a, r, w]<br>
+[0, 2, 1] = [a, r, x]<br>
+[0, 2, 2] = [a, r, y]<br>
+[0, 2, 3] = [a, r, z]<br>
+[1, 0, 0] = [b, p, w]<br>
+[1, 0, 1] = [b, p, x]<br>
+[1, 0, 2] = [b, p, y]<br>
+[1, 0, 3] = [b, p, z]<br>
+[1, 1, 0] = [b, q, w]<br>
+[1, 1, 1] = [b, q, x]<br>
+[1, 1, 2] = [b, q, y]<br>
+[1, 1, 3] = [b, q, z]<br>
+[1, 2, 0] = [b, r, w]<br>
+[1, 2, 1] = [b, r, x]<br>
+[1, 2, 2] = [b, r, y]<br>
+[1, 2, 3] = [b, r, z]<br>
+</div>
+<h4>Implementation</h4>
+<p><a href="source/n-tuple.c.html">n-tuple.c</a>
+<h4>Example</h4>
+<p>The following program produces the output shown above:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;n-tuple.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;ar[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;len = <font color="#804040"><b>sizeof</b></font>(ar) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*set0[] = {<font color="#ff00ff">&quot;a&quot;</font>, <font color="#ff00ff">&quot;b&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*set1[] = {<font color="#ff00ff">&quot;p&quot;</font>, <font color="#ff00ff">&quot;q&quot;</font>, <font color="#ff00ff">&quot;r&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*set2[] = {<font color="#ff00ff">&quot;w&quot;</font>, <font color="#ff00ff">&quot;x&quot;</font>, <font color="#ff00ff">&quot;y&quot;</font>, <font color="#ff00ff">&quot;z&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;**elements[] = {set0, set1, set2};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;sizes[] = {<font color="#804040"><b>sizeof</b></font>(set0) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>char</b></font>*),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>sizeof</b></font>(set1) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>char</b></font>*),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>sizeof</b></font>(set2) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>char</b></font>*)};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_array(ar, len, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fputs(<font color="#ff00ff">&quot; = &quot;</font>, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_n_tuple(ar, len, sizes, (<font color="#2e8b57"><b>void</b></font>*)elements, (MBprintfn)fputs, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_n_tuple(ar, len, sizes));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="permutations"></a>
+<h3 class="algorithm">Permutations</h3>
+<h4>Introduction</h4>
+<p>The permutations of a set are the ways of arranging its elements.
+<p>For example, there are 24 permutations of a set of 4 elements:</p>
+<div class="output">
+[0, 1, 2, 3]<br>
+[0, 1, 3, 2]<br>
+[0, 2, 1, 3]<br>
+[0, 2, 3, 1]<br>
+[0, 3, 1, 2]<br>
+[0, 3, 2, 1]<br>
+[1, 0, 2, 3]<br>
+[1, 0, 3, 2]<br>
+[1, 2, 0, 3]<br>
+[1, 2, 3, 0]<br>
+[1, 3, 0, 2]<br>
+[1, 3, 2, 0]<br>
+[2, 0, 1, 3]<br>
+[2, 0, 3, 1]<br>
+[2, 1, 0, 3]<br>
+[2, 1, 3, 0]<br>
+[2, 3, 0, 1]<br>
+[2, 3, 1, 0]<br>
+[3, 0, 1, 2]<br>
+[3, 0, 2, 1]<br>
+[3, 1, 0, 2]<br>
+[3, 1, 2, 0]<br>
+[3, 2, 0, 1]<br>
+[3, 2, 1, 0]<br>
+</div>
+<h4>Permutation algorithm</h4>
+<p>To find the next permutation of an array <var>ar</var>:
+<ol>
+<li>Find the highest index, <var>i<sub>1</sub></var> such that <var>ar[i<sub>1</sub>]</var> is the first of a pair of elements in ascending order.
+If there isn't one, the sequence is the highest permutation, so reverse the whole thing to begin again.
+<li>Find the highest index <var>i<sub>2</sub></var>, such that <var>i<sub>2</sub></var> &gt; <var>i<sub>1</sub></var> and <var>ar[i<sub>2</sub>]</var> &gt; <var>ar[i<sub>1</sub>]</var>.
+<li>Swap <var>ar[i<sub>1</sub>]</var> and <var>ar[i<sub>2</sub>]</var>.
+<li>The elements from <var>ar[i<sub>1</sub> + 1]</var> to the end are now in descending order (a later permutation), so reverse them.
+</ol>
+<h4>Implementation</h4>
+<p><a href="source/permutation.c.html">permutation.c</a>
+<h4>Example</h4>
+<p>The following program produces the output shown above:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;permutation.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numbers[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">2</font>, <font color="#ff00ff">3</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(numbers) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_array(numbers, n, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_permutation(numbers, n));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<h4>Using elements other than integers</h4>
+<p>To use elements other than integers, use the array elements as indices into an array containing the real elements.
+<p>For example, the following program permutes the set {a, b, c, d}:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;permutation.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numbers[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">2</font>, <font color="#ff00ff">3</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*elements[] = {<font color="#ff00ff">&quot;a&quot;</font>, <font color="#ff00ff">&quot;b&quot;</font>, <font color="#ff00ff">&quot;c&quot;</font>, <font color="#ff00ff">&quot;d&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(numbers) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_set(numbers, n, (<font color="#2e8b57"><b>void</b></font>*)elements, <font color="#ff00ff">&quot;[]&quot;</font>, (MBprintfn)fputs, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_permutation(numbers, n));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="combinations"></a>
+<h3 class="algorithm">Combinations</h3>
+<h4>Introduction</h4>
+<p>Combinations, or k-combinations, are the unordered sets of <var>k</var> elements chosen from a set of size <var>n</var>.
+<p>For example, there are 10 3-combinations of the 5-set {0, 1, 2, 3, 4}:</p>
+{0, 1, 2}<br>
+{0, 1, 3}<br>
+{0, 1, 4}<br>
+{0, 2, 3}<br>
+{0, 2, 4}<br>
+{0, 3, 4}<br>
+{1, 2, 3}<br>
+{1, 2, 4}<br>
+{1, 3, 4}<br>
+{2, 3, 4}<br>
+<p>The set of <em>all</em> combinations 0 &le; <var>k</var> &le; <var>n</var> is the <a href="combinatorial-algorithms.html#power-set">power set</a>.
+<p>Combinations that can contain duplicates are called <a href="combinatorial-algorithms.html#multicombinations">multicombinations</a>.
+<p>Combinations of a set containing duplicates are <a href="combinatorial-algorithms.html#combinations-of-a-multiset">combinations of a multiset</a>.
+<p>Combinations where order is significant are called <a href="combinatorial-algorithms.html#k-permutations">k-permutations</a>.
+<h4>Combination algorithm</h4>
+<p>This algorithm produces the combinations in lexicographic order, with the elements in each combination strictly increasing in magnitude.
+<p>Begin with the combination containing the the numbers from 0 to <var>k</var> - 1, and at each step:
+<ol>
+	<li>Find the rightmost element <var>ar[i]</var> that is less than the maximum value it can have (which is (<var>n</var> - 1) - (<var>k</var> - 1) - <var>i</var>)
+	<li>Increment it
+	<li>Turn the elements after it into a linear sequence continuing from <var>ar[i]</var>
+</ol>
+<h4>Implementation</h4>
+<p><a href="source/combination.c.html">combination.c</a>
+<h4>Example</h4>
+<p>The following program produces the output shown above:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;combination.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numbers[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">2</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;k = <font color="#804040"><b>sizeof</b></font>(numbers) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#ff00ff">5</font>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_array(numbers, k, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_combination(numbers, n, k));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<h4>Using elements other than integers</h4>
+<p>To generate combinations of elements other than the integers from 0 to <var>n</var>, use the numbers in the array as indices into an array containing the real elements.
+<p>For example, the following program generates the 3-combinations of the set {a, b, c, d, e}:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;combination.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numbers[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">2</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*elements[] = {<font color="#ff00ff">&quot;a&quot;</font>, <font color="#ff00ff">&quot;b&quot;</font>, <font color="#ff00ff">&quot;c&quot;</font>, <font color="#ff00ff">&quot;d&quot;</font>, <font color="#ff00ff">&quot;e&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;k = <font color="#804040"><b>sizeof</b></font>(numbers) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(elements) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_set(numbers, k, (void*)elements, <font color="#ff00ff">&quot;[]&quot;</font>, (MBprintfn)fputs, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_combination(numbers, n, k));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="multicombinations"></a>
+<h3 class="algorithm">Multicombinations</h3>
+<h4>Introduction</h4>
+<p>A multicombination is a <a href="combinatorial-algorithms.html#combinations">combination</a> that can contain duplicates (i.e., the combination is a multiset).
+<p>Note that the source set <em>does not</em> contain duplicates.
+For combinations of a set that contains duplicates, see <a href="combinatorial-algorithms.html#combinations-of-a-multiset">combinations of a multiset</a>.
+<p>These are the 3-multicombinations of the 4-set {0, 1, 2, 3}:</p>
+[0, 0, 0]<br>
+[0, 0, 1]<br>
+[0, 0, 2]<br>
+[0, 0, 3]<br>
+[0, 1, 1]<br>
+[0, 1, 2]<br>
+[0, 1, 3]<br>
+[0, 2, 2]<br>
+[0, 2, 3]<br>
+[0, 3, 3]<br>
+[1, 1, 1]<br>
+[1, 1, 2]<br>
+[1, 1, 3]<br>
+[1, 2, 2]<br>
+[1, 2, 3]<br>
+[1, 3, 3]<br>
+[2, 2, 2]<br>
+[2, 2, 3]<br>
+[2, 3, 3]<br>
+[3, 3, 3]<br>
+<h4>Multicombination algorithm</h4>
+<p>This algorithm produces the combinations in lexicographic order, with the elements in each combination in increasing order.
+<p>To find the next multicombination containing <var>k</var> elements from a set containing <var>n</var> elements, begin with the multicombination containing <var>k</var> zeroes, then at each step:
+<ol>
+<li>Find the rightmost element that is less than <var>n</var> - 1
+<li>Increment it.
+<li>Make the elements after it the same.
+</ol>
+<h4>Implementation</h4>
+<p><a href="source/multicombination.c.html">multicombination.c</a>
+<h4>Example</h4>
+<p>The following program produces the output shown above:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;multicombination.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numbers[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;k = <font color="#804040"><b>sizeof</b></font>(numbers) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#ff00ff">4</font>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_array(numbers, k, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_multicombination(numbers, n, k));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="combinations-of-a-multiset"></a>
+<h3 class="algorithm">Combinations of a multiset</h3>
+<h4>Introduction</h4>
+<p>These are the combinations of <var>k</var> elements chosen from a set that can contain duplicates (a multiset).
+<p>For example, given the multiset {0, 1, 1, 2, 2, 2, 3}, the 4-combinations are:</p>
+[0, 1, 1, 2]<br>
+[0, 1, 1, 3]<br>
+[0, 1, 2, 2]<br>
+[0, 1, 2, 3]<br>
+[0, 2, 2, 2]<br>
+[0, 2, 2, 3]<br>
+[1, 1, 2, 2]<br>
+[1, 1, 2, 3]<br>
+[1, 2, 2, 2]<br>
+[1, 2, 2, 3]<br>
+[2, 2, 2, 3]<br>
+<h4>Combinations of a multiset algorithm</h4>
+<p>This algorithm produces the combinations in lexicographic order, with the elements in each combination in increasing order.
+<p>Begin with the first combination, which is the first <var>k</var> elements of the multiset ([0, 1, 1, 2] in the example above), and then at each step:
+<ol>
+	<li>Find the rightmost element that is less than the maximum value it can have (which is the element in the multiset that is the same distance from the right).
+	<li>Replace it with the first multiset element greater than it.
+	<li>Replace the remainder of the combination with the elements that follow the replacement in the multiset.
+</ol>
+<h4>Implementation</h4>
+<p><a href="source/multiset-combination.c.html">multiset-combination.c</a>
+<h4>Example</h4>
+<p>The following program produces the output shown above:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;multiset-combination.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;multiset[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">2</font>, <font color="#ff00ff">2</font>, <font color="#ff00ff">2</font>, <font color="#ff00ff">3</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(multiset) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numbers[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">2</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;k = <font color="#804040"><b>sizeof</b></font>(numbers) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_array(numbers, k, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_multiset_combination(multiset, numbers, n, k));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<h4>Using elements other than integers</h4>
+<p>To use elements other than integers, use the numbers in the array as indices into an array that contains the real elements.
+<p>For example, the following program prints the combinations of the multiset [a, b, b, c, c, c, d]:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;multiset-combination.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;multiset[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">2</font>, <font color="#ff00ff">2</font>, <font color="#ff00ff">2</font>, <font color="#ff00ff">3</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*elements[] = {<font color="#ff00ff">&quot;a&quot;</font>, <font color="#ff00ff">&quot;b&quot;</font>, <font color="#ff00ff">&quot;c&quot;</font>, <font color="#ff00ff">&quot;d&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(multiset) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numbers[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">2</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;k = <font color="#804040"><b>sizeof</b></font>(numbers) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_set(numbers, k, (<font color="#2e8b57"><b>void</b></font>*)elements, <font color="#ff00ff">&quot;[]&quot;</font>, (MBprintfn)fputs, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_multiset_combination(multiset, numbers, n, k));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="power-set-of-a-multiset"></a>
+<h3 class="algorithm">Power set of a multiset</h3>
+<h4>Introduction</h4>
+<p>The power set of a multiset is the set of all its subsets, which are themselves multisets.
+<p>For example, the power set of the multiset [a, b, b, c] consists of the sets:</p>
+[]<br>
+[c]<br>
+[b]<br>
+[b, c]<br>
+[b, b]<br>
+[b, b, c]<br>
+[a]<br>
+[a, c]<br>
+[a, b]<br>
+[a, b, c]<br>
+[a, b, b]<br>
+[a, b, b, c]<br>
+<p>The set of all subsets of a particular size are <a href="combinatorial-algorithms.html#combinations-of-a-multiset">combinations of a multiset</a>. 
+<h4>Algorithm</h4>
+<p>The multiset and its subsets are represented as a vector containing, for each element, the count of its occurrences in the multiset.
+For example, the multiset [a, b, b, c] is represented as [1, 2, 1].
+This is similar to the characteristic vector used for <a href="combinatorial-algorithms.html#power-set">power set</a>, but with counts rather than boolean values.
+<p>The correspondences for the subsets are then as follows:</p>
+[0, 0, 0] = []<br>
+[0, 0, 1] = [c]<br>
+[0, 1, 0] = [b]<br>
+[0, 1, 1] = [b, c]<br>
+[0, 2, 0] = [b, b]<br>
+[0, 2, 1] = [b, b, c]<br>
+[1, 0, 0] = [a]<br>
+[1, 0, 1] = [a, c]<br>
+[1, 1, 0] = [a, b]<br>
+[1, 1, 1] = [a, b, c]<br>
+[1, 2, 0] = [a, b, b]<br>
+[1, 2, 1] = [a, b, b, c]<br>
+<p>The algorithm can then simply count from [0, 0, 0] to [1, 2, 1], using the values in the source multiset as the upper limit for the value of an element.
+<p>Note that this algorithm does not produce the subsets in lexicographic order.
+<h4>Implementation</h4>
+<p><a href="source/multiset-subset.c.html">multiset-subset.c</a>
+<h4>Examples</h4>
+<p>The following program prints the vectors for the subsets of the multiset [a, b, b, c]:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;multiset-subset.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;multiset[] = {<font color="#ff00ff">1</font>, <font color="#ff00ff">2</font>, <font color="#ff00ff">1</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(multiset) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numbers[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>};<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_array(numbers, n, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_multiset_subset(multiset, numbers, n));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<p>The following program prints the subsets of the multiset [a, b, b, c] by using the vector to retrieve the elements from the parent multiset:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;multiset-subset.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;multiset[] = {<font color="#ff00ff">1</font>, <font color="#ff00ff">2</font>, <font color="#ff00ff">1</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(multiset) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*elements[] = {<font color="#ff00ff">&quot;a&quot;</font>, <font color="#ff00ff">&quot;b&quot;</font>, <font color="#ff00ff">&quot;c&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numbers[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>, <font color="#ff00ff">0</font>};<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_multiset_subset(numbers, n, (<font color="#2e8b57"><b>void</b></font>*)elements, (MBprintfn)fputs, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_multiset_subset(multiset, numbers, n));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="k-permutations"></a>
+<h3 class="algorithm">K-permutations</h3>
+<h4>Introduction</h4>
+<p>The k-permutations of a set are the <a href="combinatorial-algorithms.html#permutations">permutations</a> of the <a href="combinatorial-algorithms.html#combinations">combinations</a> of size <var>k</var>.
+<p>There are 24 3-permutations of the 4-set {0, 1, 2, 3}:</p>
+[0, 1, 2]<br>
+[0, 2, 1]<br>
+[1, 0, 2]<br>
+[1, 2, 0]<br>
+[2, 0, 1]<br>
+[2, 1, 0]<br>
+[0, 1, 3]<br>
+[0, 3, 1]<br>
+[1, 0, 3]<br>
+[1, 3, 0]<br>
+[3, 0, 1]<br>
+[3, 1, 0]<br>
+[0, 2, 3]<br>
+[0, 3, 2]<br>
+[2, 0, 3]<br>
+[2, 3, 0]<br>
+[3, 0, 2]<br>
+[3, 2, 0]<br>
+[1, 2, 3]<br>
+[1, 3, 2]<br>
+[2, 1, 3]<br>
+[2, 3, 1]<br>
+[3, 1, 2]<br>
+[3, 2, 1]<br>
+<h4>K-permutation algorithm</h4>
+<p>The algorithm simply finds the next permutation of the array. If the array is at the last permutation, the next combination from the set is constructed.
+<p>Note that this algorithm does not produce the k-permutations in lexicographic order.
+<h4>Implementation</h4>
+<p><a href="source/k-permutation.c.html">k-permutation.c</a>
+<h4>Example</h4>
+<p>The following program produces the output shown above:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;k-permutation.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numbers[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">2</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;k = <font color="#804040"><b>sizeof</b></font>(numbers) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#ff00ff">4</font>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_array(numbers, k, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_k_permutation(numbers, n, k));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<h4>Using elements other than integers</h4>
+<p>To use elements other than integers, use the numbers in the array as indices into an array containing the real elements.
+<p>For example, the following program prints the 3-permutations of the set {a, b, c, d}:</p>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;k-permutation.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;comb-util.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;numbers[] = {<font color="#ff00ff">0</font>, <font color="#ff00ff">1</font>, <font color="#ff00ff">2</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*elements[] = {<font color="#ff00ff">&quot;a&quot;</font>, <font color="#ff00ff">&quot;b&quot;</font>, <font color="#ff00ff">&quot;c&quot;</font>, <font color="#ff00ff">&quot;d&quot;</font>};<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;k = <font color="#804040"><b>sizeof</b></font>(numbers) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#804040"><b>sizeof</b></font>(elements) / <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBprint_set(numbers, k, (<font color="#2e8b57"><b>void</b></font>*)elements, <font color="#ff00ff">&quot;[]&quot;</font>, (MBprintfn)fputs, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(MBnext_k_permutation(numbers, n, k));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="source-code"></a>
+<h2>Source code</h2>
+<p>The following archives contain all of the source code and examples:
+<ul>
+	<li><a href="downloads/mbcomb.tar.gz">mbcomb.tar.gz</a> (6 KB, Linux)</li>
+	<li><a href="downloads/mbcomb.zip">mbcomb.zip</a> (19 KB, Windows)</li>
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

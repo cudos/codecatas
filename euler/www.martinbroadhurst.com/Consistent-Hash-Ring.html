@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Consistent Hash Ring</title>
+</head>
+<body>
+<p><a href="index.html">Martin Broadhurst</a>
+<h1>Consistent Hash Ring</h1>
+<h2>Introduction</h2>
+<p>Consistent hashing was first described in a paper, <cite><a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.147.1879">Consistent hashing and random trees: Distributed caching protocols for relieving hot spots on the World Wide Web (1997)</a></cite> by David Karger <i>et al</i>.
+It is used in distributed storage systems like <a href="http://www.allthingsdistributed.com/2007/10/amazons_dynamo.html">Amazon Dynamo</a>, <a href="http://memcached.org/">memcached</a>, <a href="http://project-voldemort.com/">Project Voldemort</a> and <a href="http://wiki.basho.com/">Riak</a>.
+<h3>The problem</h3>
+<p>Consistent hashing is a very simple solution to a common problem: how can you find a server in a distributed system to store or retrieve a value identified by a key, while at the same time being able to cope with server failures and network partitions?
+<p>Simply finding a server for value is easy; just number your set of <var>s</var> servers from 0 to <var>s</var> - 1</a>.
+When you want to store or retrieve a value, hash the value's key modulo <var>s</var>, and that gives you the server.
+<p>The problem comes when servers fail or become unreachable through a network partition.
+At that point, the servers no longer fill the hash space, so the only option is to invalidate the caches on all servers, renumber them, and start again.
+Given that, in a system with hundreds or thousands of servers, failures are commonplace, this solution is not feasible.
+<h3>The solution</h3>
+<p>In consistent hashing, the servers, as well as the keys, are hashed, and it is by this hash that they are looked up.
+The hash space is large, and is treated as if it wraps around to form a circle - hence <i>hash ring</i>.
+The process of creating a hash for each server is equivalent to placing it at a point on the circumference of this circle.
+When a key needs to be looked up, it is hashed, which again corresponds to a point on the circle.
+In order to find its server, one then simply moves round the circle clockwise from this point until the next server is found.
+If no server is found from that point to end of the hash space, the first server is used - this is the &quot;wrapping round&quot; that makes the hash space circular.
+<p>The only remaining problem is that in practice hashing algorithms are likely to result in clusters of servers on the ring (or, to be more precise, some servers with a disproportionately large space before them), and this will result in greater load on the first server in the cluster and less on the remainder.
+This can be ameliorated by adding each server to the ring a number of times in different places.
+This is achieved by having a <i>replica count</i>, which applies to all servers in the ring, and when adding a server, looping from 0 to the count - 1, and hashing a string made from both the server and the loop variable to produce the position.
+This has the effect of distributing the servers more evenly over the ring.
+Note that this has nothing to do with <i>server</i> replication; each of the replicas represents the same physical server, and replication of data between servers is an entirely unrelated issue.
+<h2>Implementation</h2>
+<p>I've written an example implementation of consistent hashing in C++.
+As you can imagine from the description above, it isn't terribly complicated.
+Here is the main class:
+<div>
+<font face="monospace" size="2">
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;Node, <font color="#2e8b57"><b>class</b></font>&nbsp;Data, <font color="#2e8b57"><b>class</b></font>&nbsp;Hash = HASH_NAMESPACE::hash&lt;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*&gt; &gt;<br>
+<font color="#2e8b57"><b>class</b></font>&nbsp;HashRing<br>
+{<br>
+<font color="#804040"><b>public</b></font>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>typedef</b></font>&nbsp;std::map&lt;<font color="#2e8b57"><b>size_t</b></font>, Node&gt; NodeMap;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;HashRing(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;replicas)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: replicas_(replicas), hash_(HASH_NAMESPACE::hash&lt;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*&gt;())<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;HashRing(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;replicas, <font color="#2e8b57"><b>const</b></font>&nbsp;Hash&amp; hash)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: replicas_(replicas), hash_(hash)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;AddNode(<font color="#2e8b57"><b>const</b></font>&nbsp;Node&amp; node);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;RemoveNode(<font color="#2e8b57"><b>const</b></font>&nbsp;Node&amp; node);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;Node&amp; GetNode(<font color="#2e8b57"><b>const</b></font>&nbsp;Data&amp; data) <font color="#2e8b57"><b>const</b></font>;<br>
+<br>
+<font color="#804040"><b>private</b></font>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;NodeMap ring_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;replicas_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Hash hash_;<br>
+};<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;Node, <font color="#2e8b57"><b>class</b></font>&nbsp;Data, <font color="#2e8b57"><b>class</b></font>&nbsp;Hash&gt;<br>
+<font color="#2e8b57"><b>size_t</b></font>&nbsp;HashRing&lt;Node, Data, Hash&gt;::AddNode(<font color="#2e8b57"><b>const</b></font>&nbsp;Node&amp; node)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;hash;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string nodestr = Stringify(node);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;r = <font color="#ff00ff">0</font>; r &lt; replicas_; r++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hash = hash_((nodestr + Stringify(r)).c_str());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ring_[hash] = node;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;hash;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;Node, <font color="#2e8b57"><b>class</b></font>&nbsp;Data, <font color="#2e8b57"><b>class</b></font>&nbsp;Hash&gt;<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;HashRing&lt;Node, Data, Hash&gt;::RemoveNode(<font color="#2e8b57"><b>const</b></font>&nbsp;Node&amp; node)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string nodestr = Stringify(node);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;r = <font color="#ff00ff">0</font>; r &lt; replicas_; r++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;hash = hash_((nodestr + Stringify(r)).c_str());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ring_.erase(hash);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;Node, <font color="#2e8b57"><b>class</b></font>&nbsp;Data, <font color="#2e8b57"><b>class</b></font>&nbsp;Hash&gt;<br>
+<font color="#2e8b57"><b>const</b></font>&nbsp;Node&amp; HashRing&lt;Node, Data, Hash&gt;::GetNode(<font color="#2e8b57"><b>const</b></font>&nbsp;Data&amp; data) <font color="#2e8b57"><b>const</b></font><br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(ring_.empty()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>throw</b></font>&nbsp;EmptyRingException();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;hash = hash_(Stringify(data).c_str());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>typename</b></font>&nbsp;NodeMap::const_iterator it;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Look for the first node &gt;= hash</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;it = ring_.lower_bound(hash);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(it == ring_.end()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Wrapped around; get the first node</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it = ring_.begin();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;it-&gt;second;<br>
+}<br>
+</font>
+</div>
+<p>A few points to note:
+<ul>
+	<li>The default hash function is <code>hash</code> from &lt;map&gt;.<br>
+	In practice you probably don't want to use this.
+	Something like MD5 would probably be best.
+	<li>I had to define <code>HASH_NAMESPACE</code> because g++ puts the non-standard <code>hash</code> in a different namespace than that which other compilers do.<br>
+	Hopefully this will all be resolved with the widespread availablity of <code>std::unordered_map</code>.
+	<li>The <code>Node</code> and <code>Data</code> types need to have <code>operator &lt;&lt;</code> defined for a <code>std::ostream</code>.<br>
+    This is because I write them to an <code>ostringstream</code> in order to &quot;stringify&quot; them before getting the hash.
+</ul>
+<p>I've also written an example program that simulates using a cluster of cache servers to store and retrieve some data.
+<h2>Source code</h2>
+<p>You can browse the source code and example program here:
+<ul>
+<li><a href="source/consistent.h.html">consistent.h</a>
+<li><a href="source/hashring_example.cpp.html">hashring_example.cpp</a>
+</ul>
+<p>Here is a compressed tar archive containing the source code, example program and makefile:
+<ul>
+<li><a href="downloads/consistent.tar.gz">consistent.tar.gz</a>
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

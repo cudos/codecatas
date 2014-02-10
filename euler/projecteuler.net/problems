@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Colin Hughes" />
+<meta name="description" content="A website dedicated to the fascinating world of mathematics and programming" />
+<meta name="keywords" content="programming,mathematics,problems,puzzles" />
+
+<title>Project Euler</title>
+<link rel="shortcut icon" href="favicon.ico" />
+<link rel="stylesheet" type="text/css" href="style_main.css" />
+<link rel="stylesheet" type="text/css" href="style_light.css" />
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({
+      jax: ["input/TeX", "output/HTML-CSS"],
+      tex2jax: {
+         inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+         displayMath: [ ["$$","$$"], ["\\[","\\]"] ],
+         processEscapes: true
+      },
+      "HTML-CSS": { availableFonts: ["TeX"] }
+   });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+</script>
+</head>
+
+<body>
+<div id="container">
+
+   <div id="nav" class="noprint">
+      <ul>
+<li><a href="secure=3fcc6" title="About" accesskey="h">About</a></li>
+<li><a href="register" title="Register" accesskey="1">Register</a></li>
+<li id="current"><a href="problems" title="Problems" accesskey="2">Problems</a></li>
+<li><a href="login" title="Login" accesskey="3">Login</a></li>
+      </ul>
+   </div>
+<div id="info_panel"><a href="rss2_euler.xml"><img src="images/icon_rss.png" alt="RSS Feed" title="RSS Feed" /></a><a href="secure=064ec"><img src="images/icon_lock.png" alt="Use secure connection" title="Use secure connection" /></a></div>
+
+<div id="logo" class="noprint">
+   <img src="images/pe_banner_light.png" alt="Project Euler .net" />
+</div>
+
+<div id="content">
+<h2>Problems</h2><div class="pagination"><a href="problems" class="current">1</a><a href="problems%3Bpage=2" title="Go to page 2">2</a><a href="problems%3Bpage=3" title="Go to page 3">3</a><a href="problems%3Bpage=4" title="Go to page 4">4</a><a href="problems%3Bpage=5" title="Go to page 5">5</a><a href="problems%3Bpage=6" title="Go to page 6">6</a><a href="problems%3Bpage=7" title="Go to page 7">7</a><a href="problems%3Bpage=8" title="Go to page 8">8</a><a href="problems%3Bpage=9" title="Go to page 9">9</a><a href="problems%3Bpage=10" title="Go to page 10">10</a><span>&nbsp;&nbsp;&nbsp;Go to Problem: <input type="text" id="jump_top" style="width:30px;" onkeypress="if (event.keyCode==13) location.href='problem='+this.value;" /></span></div><div style="clear:both;"></div><br />
+<table class="grid" style="width:800px">
+<tr><th style="width:40px;"><strong><span style="color:#000;text-decoration:underline;">ID</span></strong></th><th style="width:400px;"><b>Description / Title</b></th><th style="width:70px;"><strong>Solved By</th></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>1</b></div></td><td><a href="problem=1" style="text-decoration:none;" title="Published on Friday, 5th October 2001, 06:00 pm">Multiples of 3 and 5</a></td><td><div style="text-align:center;">336951</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>2</b></div></td><td><a href="problem=2" style="text-decoration:none;" title="Published on Friday, 19th October 2001, 06:00 pm">Even Fibonacci numbers</a></td><td><div style="text-align:center;">278606</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>3</b></div></td><td><a href="problem=3" style="text-decoration:none;" title="Published on Friday, 2nd November 2001, 06:00 pm">Largest prime factor</a></td><td><div style="text-align:center;">203469</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>4</b></div></td><td><a href="problem=4" style="text-decoration:none;" title="Published on Friday, 16th November 2001, 06:00 pm">Largest palindrome product</a></td><td><div style="text-align:center;">185796</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>5</b></div></td><td><a href="problem=5" style="text-decoration:none;" title="Published on Friday, 30th November 2001, 06:00 pm">Smallest multiple</a></td><td><div style="text-align:center;">199515</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>6</b></div></td><td><a href="problem=6" style="text-decoration:none;" title="Published on Friday, 14th December 2001, 06:00 pm">Sum square difference</a></td><td><div style="text-align:center;">201077</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>7</b></div></td><td><a href="problem=7" style="text-decoration:none;" title="Published on Friday, 28th December 2001, 06:00 pm">10001st prime</a></td><td><div style="text-align:center;">172037</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>8</b></div></td><td><a href="problem=8" style="text-decoration:none;" title="Published on Friday, 11th January 2002, 06:00 pm">Largest product in a series</a></td><td><div style="text-align:center;">152688</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>9</b></div></td><td><a href="problem=9" style="text-decoration:none;" title="Published on Friday, 25th January 2002, 06:00 pm">Special Pythagorean triplet</a></td><td><div style="text-align:center;">151081</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>10</b></div></td><td><a href="problem=10" style="text-decoration:none;" title="Published on Friday, 8th February 2002, 06:00 pm">Summation of primes</a></td><td><div style="text-align:center;">138156</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>11</b></div></td><td><a href="problem=11" style="text-decoration:none;" title="Published on Friday, 22nd February 2002, 06:00 pm">Largest product in a grid</a></td><td><div style="text-align:center;">104099</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>12</b></div></td><td><a href="problem=12" style="text-decoration:none;" title="Published on Friday, 8th March 2002, 06:00 pm">Highly divisible triangular number</a></td><td><div style="text-align:center;">93838</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>13</b></div></td><td><a href="problem=13" style="text-decoration:none;" title="Published on Friday, 22nd March 2002, 06:00 pm">Large sum</a></td><td><div style="text-align:center;">100407</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>14</b></div></td><td><a href="problem=14" style="text-decoration:none;" title="Published on Friday, 5th April 2002, 06:00 pm">Longest Collatz sequence</a></td><td><div style="text-align:center;">98304</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>15</b></div></td><td><a href="problem=15" style="text-decoration:none;" title="Published on Friday, 19th April 2002, 06:00 pm">Lattice paths</a></td><td><div style="text-align:center;">81774</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>16</b></div></td><td><a href="problem=16" style="text-decoration:none;" title="Published on Friday, 3rd May 2002, 06:00 pm">Power digit sum</a></td><td><div style="text-align:center;">103347</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>17</b></div></td><td><a href="problem=17" style="text-decoration:none;" title="Published on Friday, 17th May 2002, 06:00 pm">Number letter counts</a></td><td><div style="text-align:center;">67741</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>18</b></div></td><td><a href="problem=18" style="text-decoration:none;" title="Published on Friday, 31st May 2002, 06:00 pm">Maximum path sum I</a></td><td><div style="text-align:center;">66687</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>19</b></div></td><td><a href="problem=19" style="text-decoration:none;" title="Published on Friday, 14th June 2002, 06:00 pm">Counting Sundays</a></td><td><div style="text-align:center;">61374</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>20</b></div></td><td><a href="problem=20" style="text-decoration:none;" title="Published on Friday, 21st June 2002, 06:00 pm">Factorial digit sum</a></td><td><div style="text-align:center;">94985</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>21</b></div></td><td><a href="problem=21" style="text-decoration:none;" title="Published on Friday, 5th July 2002, 06:00 pm">Amicable numbers</a></td><td><div style="text-align:center;">66085</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>22</b></div></td><td><a href="problem=22" style="text-decoration:none;" title="Published on Friday, 19th July 2002, 06:00 pm">Names scores</a></td><td><div style="text-align:center;">61685</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>23</b></div></td><td><a href="problem=23" style="text-decoration:none;" title="Published on Friday, 2nd August 2002, 06:00 pm">Non-abundant sums</a></td><td><div style="text-align:center;">46345</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>24</b></div></td><td><a href="problem=24" style="text-decoration:none;" title="Published on Friday, 16th August 2002, 06:00 pm">Lexicographic permutations</a></td><td><div style="text-align:center;">53627</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>25</b></div></td><td><a href="problem=25" style="text-decoration:none;" title="Published on Friday, 30th August 2002, 06:00 pm">1000-digit Fibonacci number</a></td><td><div style="text-align:center;">72308</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>26</b></div></td><td><a href="problem=26" style="text-decoration:none;" title="Published on Friday, 13th September 2002, 06:00 pm">Reciprocal cycles</a></td><td><div style="text-align:center;">38099</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>27</b></div></td><td><a href="problem=27" style="text-decoration:none;" title="Published on Friday, 27th September 2002, 06:00 pm">Quadratic primes</a></td><td><div style="text-align:center;">40138</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>28</b></div></td><td><a href="problem=28" style="text-decoration:none;" title="Published on Friday, 11th October 2002, 06:00 pm">Number spiral diagonals</a></td><td><div style="text-align:center;">53797</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>29</b></div></td><td><a href="problem=29" style="text-decoration:none;" title="Published on Friday, 25th October 2002, 06:00 pm">Distinct powers</a></td><td><div style="text-align:center;">48228</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>30</b></div></td><td><a href="problem=30" style="text-decoration:none;" title="Published on Friday, 8th November 2002, 06:00 pm">Digit fifth powers</a></td><td><div style="text-align:center;">51352</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>31</b></div></td><td><a href="problem=31" style="text-decoration:none;" title="Published on Friday, 22nd November 2002, 06:00 pm">Coin sums</a></td><td><div style="text-align:center;">37691</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>32</b></div></td><td><a href="problem=32" style="text-decoration:none;" title="Published on Friday, 6th December 2002, 06:00 pm">Pandigital products</a></td><td><div style="text-align:center;">32558</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>33</b></div></td><td><a href="problem=33" style="text-decoration:none;" title="Published on Friday, 20th December 2002, 06:00 pm">Digit canceling fractions</a></td><td><div style="text-align:center;">33790</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>34</b></div></td><td><a href="problem=34" style="text-decoration:none;" title="Published on Friday, 3rd January 2003, 06:00 pm">Digit factorials</a></td><td><div style="text-align:center;">44890</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>35</b></div></td><td><a href="problem=35" style="text-decoration:none;" title="Published on Friday, 17th January 2003, 06:00 pm">Circular primes</a></td><td><div style="text-align:center;">41108</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>36</b></div></td><td><a href="problem=36" style="text-decoration:none;" title="Published on Friday, 31st January 2003, 06:00 pm">Double-base palindromes</a></td><td><div style="text-align:center;">43827</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>37</b></div></td><td><a href="problem=37" style="text-decoration:none;" title="Published on Friday, 14th February 2003, 06:00 pm">Truncatable primes</a></td><td><div style="text-align:center;">34679</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>38</b></div></td><td><a href="problem=38" style="text-decoration:none;" title="Published on Friday, 28th February 2003, 06:00 pm">Pandigital multiples</a></td><td><div style="text-align:center;">29422</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>39</b></div></td><td><a href="problem=39" style="text-decoration:none;" title="Published on Friday, 14th March 2003, 06:00 pm">Integer right triangles</a></td><td><div style="text-align:center;">34069</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>40</b></div></td><td><a href="problem=40" style="text-decoration:none;" title="Published on Friday, 28th March 2003, 06:00 pm">Champernowne's constant</a></td><td><div style="text-align:center;">38272</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>41</b></div></td><td><a href="problem=41" style="text-decoration:none;" title="Published on Friday, 11th April 2003, 06:00 pm">Pandigital prime</a></td><td><div style="text-align:center;">31962</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>42</b></div></td><td><a href="problem=42" style="text-decoration:none;" title="Published on Friday, 25th April 2003, 06:00 pm">Coded triangle numbers</a></td><td><div style="text-align:center;">36876</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>43</b></div></td><td><a href="problem=43" style="text-decoration:none;" title="Published on Friday, 9th May 2003, 06:00 pm">Sub-string divisibility</a></td><td><div style="text-align:center;">27035</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>44</b></div></td><td><a href="problem=44" style="text-decoration:none;" title="Published on Friday, 23rd May 2003, 06:00 pm">Pentagon numbers</a></td><td><div style="text-align:center;">26095</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>45</b></div></td><td><a href="problem=45" style="text-decoration:none;" title="Published on Friday, 6th June 2003, 06:00 pm">Triangular, pentagonal, and hexagonal</a></td><td><div style="text-align:center;">34958</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>46</b></div></td><td><a href="problem=46" style="text-decoration:none;" title="Published on Friday, 20th June 2003, 06:00 pm">Goldbach's other conjecture</a></td><td><div style="text-align:center;">27717</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>47</b></div></td><td><a href="problem=47" style="text-decoration:none;" title="Published on Friday, 4th July 2003, 06:00 pm">Distinct primes factors</a></td><td><div style="text-align:center;">26781</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>48</b></div></td><td><a href="problem=48" style="text-decoration:none;" title="Published on Friday, 18th July 2003, 06:00 pm">Self powers</a></td><td><div style="text-align:center;">58558</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>49</b></div></td><td><a href="problem=49" style="text-decoration:none;" title="Published on Friday, 1st August 2003, 06:00 pm">Prime permutations</a></td><td><div style="text-align:center;">26408</div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>50</b></div></td><td><a href="problem=50" style="text-decoration:none;" title="Published on Friday, 15th August 2003, 06:00 pm">Consecutive prime sum</a></td><td><div style="text-align:center;">28406</div></td></tr>
+</table>
+<br /><div class="pagination"><a href="problems" class="current">1</a><a href="problems%3Bpage=2" title="Go to page 2">2</a><a href="problems%3Bpage=3" title="Go to page 3">3</a><a href="problems%3Bpage=4" title="Go to page 4">4</a><a href="problems%3Bpage=5" title="Go to page 5">5</a><a href="problems%3Bpage=6" title="Go to page 6">6</a><a href="problems%3Bpage=7" title="Go to page 7">7</a><a href="problems%3Bpage=8" title="Go to page 8">8</a><a href="problems%3Bpage=9" title="Go to page 9">9</a><a href="problems%3Bpage=10" title="Go to page 10">10</a><span>&nbsp;&nbsp;&nbsp;Go to Problem: <input type="text" id="jump_bottom" style="width:30px;" onkeypress="if (event.keyCode==13) location.href='problem='+this.value;" /></span></div><div style="clear:both;"></div><script type="text/javascript">
+function gotoPage(elem) {
+   page = elem.value;
+   page_str = ";page="+page;
+   if ( elem.value==1 ) page_str = "";
+   if ( page>0 && page<=10) location.href='problems'+page_str;
+}
+//document.getElementById('jump_top').focus();
+</script>
+</div>
+
+
+
+
+
+<div id="footer" class="noprint">
+<a href="copyright">Project Euler Copyright Information</a>
+<!--/Creative Commons License--><!-- <rdf:RDF xmlns="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+   <Work rdf:about="">
+      <license rdf:resource="http://creativecommons.org/licenses/by-nc-sa/2.0/uk/" />
+   <dc:type rdf:resource="http://purl.org/dc/dcmitype/Text" />
+   </Work>
+   <License rdf:about="http://creativecommons.org/licenses/by-nc-sa/2.0/uk/"><permits rdf:resource="http://web.resource.org/cc/Reproduction"/><permits rdf:resource="http://web.resource.org/cc/Distribution"/><requires rdf:resource="http://web.resource.org/cc/Notice"/><requires rdf:resource="http://web.resource.org/cc/Attribution"/><prohibits rdf:resource="http://web.resource.org/cc/CommercialUse"/><permits rdf:resource="http://web.resource.org/cc/DerivativeWorks"/><requires rdf:resource="http://web.resource.org/cc/ShareAlike"/></License></rdf:RDF> -->
+</div>
+</div>
+<div style="height:1px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </div></body>
+</html>

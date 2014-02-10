@@ -1,0 +1,515 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>webserver.c</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;A desktop Web server for Windows </font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;by Martin Broadhurst (www.martinbroadhurst.com)</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Link with Ws2_32.lib</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#ifndef WIN32_LEAN_AND_MEAN</font><br>
+<font color="#a020f0">#define WIN32_LEAN_AND_MEAN</font><br>
+<font color="#a020f0">#endif</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdlib.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;ctype.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;windows.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;winsock2.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;ws2tcpip.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;sys/stat.h&gt;</font><br>
+<br>
+<font color="#a020f0">#define BUFSIZE </font><font color="#ff00ff">4096</font><font color="#a020f0">&nbsp;&nbsp;</font><font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Used for recv and file transfers </font><font color="#0000ff">*/</font><br>
+<font color="#a020f0">#define PORT&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#ff00ff">&quot;80&quot;</font><font color="#a020f0">&nbsp;&nbsp;</font><font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Default port </font><font color="#0000ff">*/</font><br>
+<font color="#a020f0">#define BACKLOG </font><font color="#ff00ff">10</font><font color="#a020f0">&nbsp;&nbsp;&nbsp;&nbsp; </font><font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Passed to listen() </font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#define BAD_REQUEST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font color="#ff00ff">&quot;400: Bad Request&quot;</font><br>
+<font color="#a020f0">#define NOT_FOUND&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </font><font color="#ff00ff">&quot;404: Not Found&quot;</font><br>
+<font color="#a020f0">#define METHOD_NOT_ALLOWED&nbsp;&nbsp;&nbsp;&nbsp;</font><font color="#ff00ff">&quot;405: Method Not Allowed&quot;</font><br>
+<font color="#a020f0">#define INTERNAL_SERVER_ERROR </font><font color="#ff00ff">&quot;500: Internal Server Error&quot;</font><br>
+<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*extension;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*mimetype;<br>
+} mimetype_assoc; <br>
+mimetype_assoc mimetypes[] = {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<font color="#ff00ff">&quot;html&quot;</font>, <font color="#ff00ff">&quot;text/html&quot;</font>},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<font color="#ff00ff">&quot;htm&quot;</font>,&nbsp;&nbsp;<font color="#ff00ff">&quot;text/html&quot;</font>},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<font color="#ff00ff">&quot;xml&quot;</font>,&nbsp;&nbsp;<font color="#ff00ff">&quot;application/xml&quot;</font>},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<font color="#ff00ff">&quot;txt&quot;</font>,&nbsp;&nbsp;<font color="#ff00ff">&quot;text/plain&quot;</font>},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<font color="#ff00ff">&quot;gif&quot;</font>,&nbsp;&nbsp;<font color="#ff00ff">&quot;image/gif&quot;</font>},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<font color="#ff00ff">&quot;jpg&quot;</font>,&nbsp;&nbsp;<font color="#ff00ff">&quot;image/jpeg&quot;</font>},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<font color="#ff00ff">&quot;png&quot;</font>,&nbsp;&nbsp;<font color="#ff00ff">&quot;image/png&quot;</font>},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<font color="#ff00ff">&quot;doc&quot;</font>,&nbsp;&nbsp;<font color="#ff00ff">&quot;application/msword&quot;</font>},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<font color="#ff00ff">&quot;xls&quot;</font>,&nbsp;&nbsp;<font color="#ff00ff">&quot;application/vnd.msexcel&quot;</font>},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<font color="#ff00ff">&quot;pdf&quot;</font>,&nbsp;&nbsp;<font color="#ff00ff">&quot;application/pdf&quot;</font>},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<font color="#ff00ff">&quot;ps&quot;</font>,&nbsp;&nbsp; <font color="#ff00ff">&quot;application/postscript&quot;</font>},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Add more here </font><font color="#0000ff">*/</font><br>
+};<br>
+<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;num_mimetypes = <font color="#804040"><b>sizeof</b></font>(mimetypes) / <font color="#804040"><b>sizeof</b></font>(mimetype_assoc);<br>
+<br>
+<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;A growable string </font><font color="#0000ff">*/</font><br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font><br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*buf;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;size;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;len;<br>
+} stringbuf;<br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;stringbuf * stringbuf_create()<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf * buf = malloc(<font color="#804040"><b>sizeof</b></font>(stringbuf));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(buf) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf-&gt;size = <font color="#ff00ff">16</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf-&gt;len = <font color="#ff00ff">0</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf-&gt;buf = malloc(buf-&gt;size);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(buf-&gt;buf) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf-&gt;buf[<font color="#ff00ff">0</font>] = <font color="#6a5acd">'\0'</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;buf;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;stringbuf_delete(stringbuf * buf)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(buf) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;free(buf-&gt;buf);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;free(buf);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;stringbuf_resize(stringbuf * buf, <font color="#2e8b57"><b>size_t</b></font>&nbsp;newsize)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;*temp = realloc(buf-&gt;buf, newsize);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(temp) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf-&gt;size = newsize;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;free(buf-&gt;buf);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;buf-&gt;buf = temp;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;stringbuf_addstring(stringbuf * buf, <font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;* s)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;len = strlen(s);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(buf-&gt;len + len + <font color="#ff00ff">1</font>&nbsp;&gt; buf-&gt;size) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_resize(buf, buf-&gt;size + len);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(buf-&gt;buf) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;strncat(buf-&gt;buf, s, len);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf-&gt;len += len;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;stringbuf_addchar(stringbuf * buf, <font color="#2e8b57"><b>char</b></font>&nbsp;c)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(buf-&gt;len == buf-&gt;size - <font color="#ff00ff">1</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_resize(buf, buf-&gt;size * <font color="#ff00ff">2</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(buf-&gt;buf) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf-&gt;buf[buf-&gt;len] = c;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf-&gt;buf[buf-&gt;len + <font color="#ff00ff">1</font>] = <font color="#6a5acd">'\0'</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf-&gt;len++;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Parse the request start line </font><font color="#0000ff">*/</font><br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;parse_start(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*line, <font color="#2e8b57"><b>char</b></font>&nbsp;**method, <font color="#2e8b57"><b>char</b></font>&nbsp;**path)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;result = <font color="#ff00ff">0</font>; <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Success </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;i;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;start = <font color="#ff00ff">0</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(i = start; line[i] &amp;&amp; line[i] != <font color="#ff00ff">' '</font>; i++);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(line[i] &amp;&amp; i &gt; <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*method = malloc(i + <font color="#ff00ff">1</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(*method) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;strncpy(*method, line, i);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(*method)[i] = <font color="#6a5acd">'\0'</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result = <font color="#ff00ff">2</font>; <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Server error </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result = <font color="#ff00ff">1</font>; <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Bad request </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(result == <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;start = i + <font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(i = start; line[i] &amp;&amp; line[i] != <font color="#ff00ff">' '</font>; i++);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(line[i] &amp;&amp; i - start &gt; <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*path = malloc(i - start + <font color="#ff00ff">1</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(path) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;strncpy(*path, &amp;line[start], i - start);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(*path)[i - start] = <font color="#6a5acd">'\0'</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result = <font color="#ff00ff">2</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result = <font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;result;<br>
+}<br>
+<br>
+<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Send a status message </font><font color="#0000ff">*/</font><br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;send_message(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*message, SOCKET sock)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf *headers = stringbuf_create();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, <font color="#ff00ff">&quot;HTTP/1.0 &quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, message);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, <font color="#ff00ff">&quot;</font><font color="#6a5acd">\n\n</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!headers-&gt;buf) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_message(INTERNAL_SERVER_ERROR, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;send(sock, headers-&gt;buf, headers-&gt;len, <font color="#ff00ff">0</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_delete(headers);<br>
+}<br>
+<br>
+<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Add a line to a directory listing </font><font color="#0000ff">*/</font><br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;add_file(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*name, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;directory, <font color="#2e8b57"><b>size_t</b></font>&nbsp;size,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*uripath, stringbuf *buf)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(buf, <font color="#ff00ff">&quot;&lt;p&gt;&lt;a href=</font><font color="#6a5acd">\&quot;</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(strcmp(uripath, <font color="#ff00ff">&quot;/&quot;</font>) != <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(buf, uripath);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addchar(buf, <font color="#ff00ff">'/'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(buf, name);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(buf, <font color="#ff00ff">&quot;</font><font color="#6a5acd">\&quot;</font><font color="#ff00ff">&gt;&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(buf, name);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(buf, <font color="#ff00ff">&quot;&lt;/a&gt;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>);<br>
+}<br>
+<br>
+<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Send a directory listing </font><font color="#0000ff">*/</font><br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;send_directory(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*localpath, <font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*uripath, SOCKET sock)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf *headers = stringbuf_create();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf *body = stringbuf_create();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;sizebuf[<font color="#ff00ff">128</font>];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;WIN32_FIND_DATA data;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;HANDLE hFind;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*pattern;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Create the pattern </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;pattern = malloc(strlen(localpath) + <font color="#ff00ff">3</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!pattern) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_message(INTERNAL_SERVER_ERROR, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sprintf(pattern, <font color="#ff00ff">&quot;</font><font color="#6a5acd">%s</font><font color="#6a5acd">\\</font><font color="#ff00ff">*&quot;</font>, localpath);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Pattern is </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, pattern);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Start creating the headers </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, <font color="#ff00ff">&quot;HTTP/1.0 200: OK</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, <font color="#ff00ff">&quot;Content-Type: text/html</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Create the body </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(body, <font color="#ff00ff">&quot;&lt;html&gt;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(body, <font color="#ff00ff">&quot;&lt;h1&gt;Directory of &quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(body, uripath);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(body, <font color="#ff00ff">&quot;&lt;/h1&gt;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;((hFind = FindFirstFile(pattern, &amp;data)) != INVALID_HANDLE_VALUE) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>do</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(data.cFileName[<font color="#ff00ff">0</font>] != <font color="#ff00ff">'.'</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;add_file(strchr(data.cFileName, <font color="#ff00ff">' '</font>) == <font color="#ff00ff">NULL</font>&nbsp;?<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data.cFileName : data.cAlternateFileName, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data.dwFileAttributes &amp; FILE_ATTRIBUTE_DIRECTORY, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data.nFileSizeLow, uripath, body);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} <font color="#804040"><b>while</b></font>&nbsp;(FindNextFile(hFind, &amp;data) != <font color="#ff00ff">0</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;FindClose(hFind);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;free(pattern);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(body, <font color="#ff00ff">&quot;&lt;/html&gt;&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Complete the headers with Content-Length </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;sprintf(sizebuf, <font color="#ff00ff">&quot;Content-Length: </font><font color="#6a5acd">%d</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, body-&gt;len);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, sizebuf);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addchar(headers, <font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!headers-&gt;buf || !body-&gt;buf) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_message(INTERNAL_SERVER_ERROR, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Send </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;send(sock, headers-&gt;buf, headers-&gt;len, <font color="#ff00ff">0</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;send(sock, body-&gt;buf, body-&gt;len, <font color="#ff00ff">0</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Cleanup </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_delete(body);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_delete(headers);<br>
+}<br>
+<br>
+<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Add the mime-type to headers </font><font color="#0000ff">*/</font><br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;add_mimetype(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*name, stringbuf *headers)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*mimetype = <font color="#ff00ff">NULL</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;len = strlen(name);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;* extension = strrchr(name, <font color="#ff00ff">'.'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(extension &amp;&amp; *(extension + <font color="#ff00ff">1</font>)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;e;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;extension += <font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(e = <font color="#ff00ff">0</font>; e &lt; num_mimetypes &amp;&amp; !mimetype; e++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(strcmp(extension, mimetypes[e].extension) == <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mimetype = mimetypes[e].mimetype;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!mimetype) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mimetype = <font color="#ff00ff">&quot;application/octet-stream&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Sending mime-type </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, mimetype);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, <font color="#ff00ff">&quot;Content-Type: &quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, mimetype);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addchar(headers, <font color="#6a5acd">'\n'</font>);<br>
+}<br>
+<br>
+<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Send a file </font><font color="#0000ff">*/</font><br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;send_file(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*name, <font color="#2e8b57"><b>size_t</b></font>&nbsp;size, SOCKET sock)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf *headers = stringbuf_create();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;sizebuf[<font color="#ff00ff">128</font>];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>FILE</b></font>&nbsp;*fptr;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Send the headers </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, <font color="#ff00ff">&quot;HTTP/1.0 200: OK</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sprintf(sizebuf, <font color="#ff00ff">&quot;Content-Length: </font><font color="#6a5acd">%ld</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, size);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, sizebuf);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;add_mimetype(name, headers);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addchar(headers, <font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!headers-&gt;buf) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_message(INTERNAL_SERVER_ERROR, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;send(sock, headers-&gt;buf, headers-&gt;len, <font color="#ff00ff">0</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_delete(headers);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Send the file </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Sending file </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, name);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;((fptr = fopen(name, <font color="#ff00ff">&quot;rb&quot;</font>)) != <font color="#ff00ff">NULL</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;buf[BUFSIZE];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;size = <font color="#804040"><b>sizeof</b></font>(buf);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;((bytes = fread(buf, <font color="#ff00ff">1</font>, size, fptr)) &gt; <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send(sock, buf, bytes, <font color="#ff00ff">0</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fclose(fptr);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_message(NOT_FOUND, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Handle a GET request </font><font color="#0000ff">*/</font><br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;handle_get(SOCKET sock, <font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*directory, <font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*uripath)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*localpath; <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;The path we use to read local files and directories </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*statpath;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;The path we send to _stat (mustn't have a trailing slash) </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;dirwanted = <font color="#ff00ff">0</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;_stat statbuf;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;localpath = malloc(strlen(directory) + strlen(uripath) + <font color="#ff00ff">1</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!localpath) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_message(INTERNAL_SERVER_ERROR, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;sprintf(localpath, <font color="#ff00ff">&quot;</font><font color="#6a5acd">%s%s</font><font color="#ff00ff">&quot;</font>, directory, uripath);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;URI path is </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, uripath);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Local path is </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, localpath);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;statpath = _strdup(localpath);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!statpath) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_message(INTERNAL_SERVER_ERROR, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(statpath[strlen(statpath) - <font color="#ff00ff">1</font>] == <font color="#ff00ff">'/'</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Client wants a directory (the trailing / is optional) </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;dirwanted = <font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Can't _stat with a trailing / </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;statpath[strlen(statpath) - <font color="#ff00ff">1</font>] = <font color="#6a5acd">'\0'</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(_stat(statpath, &amp;statbuf) == <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(statbuf.st_mode &amp; _S_IFDIR) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;List the directory </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_directory(localpath, uripath, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!dirwanted) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Send the file </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_file(localpath, statbuf.st_size, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Directory was requested, but the path is a file </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_message(NOT_FOUND, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Path not found </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_message(NOT_FOUND, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Cleanup </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;free(localpath);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;free(statpath);<br>
+}<br>
+<br>
+<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Handle a connection </font><font color="#0000ff">*/</font><br>
+<font color="#2e8b57"><b>static</b></font>&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;handle(SOCKET sock, <font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*directory)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;bytes;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;buf[BUFSIZE];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*method;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*uripath; <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;The path from the request URL, and used to construct URLs </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;result;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Read the request </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;bytes = recv(sock, buf, BUFSIZE, <font color="#ff00ff">0</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(bytes == <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Client has disconnected</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(bytes == SOCKET_ERROR) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<font color="#ff00ff">&quot;recv&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Parse the request </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;result = parse_start(buf, &amp;method, &amp;uripath);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(result == <font color="#ff00ff">1</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_message(BAD_REQUEST, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(result == <font color="#ff00ff">2</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_message(INTERNAL_SERVER_ERROR, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Method is </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, method);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(strcmp(method, <font color="#ff00ff">&quot;GET&quot;</font>) == <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;handle_get(sock, directory, uripath);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stringbuf *headers = stringbuf_create();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, <font color="#ff00ff">&quot;HTTP/1.0 &quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, METHOD_NOT_ALLOWED);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addchar(headers, <font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;stringbuf_addstring(headers, <font color="#ff00ff">&quot;Allow: GET</font><font color="#6a5acd">\n\n</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!headers-&gt;buf) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send_message(INTERNAL_SERVER_ERROR, sock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;send(sock, headers-&gt;buf, headers-&gt;len, <font color="#ff00ff">0</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Handler for Ctrl-C, closing the window etc. </font><font color="#0000ff">*/</font><br>
+BOOL CtrlHandler(DWORD fdwCtrlType) <br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;WSACleanup();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Bye</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;FALSE;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>int</b></font>&nbsp;argc, <font color="#2e8b57"><b>char</b></font>&nbsp;**argv)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;WORD wVersion = MAKEWORD(<font color="#ff00ff">2</font>, <font color="#ff00ff">2</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;WSADATA wsaData;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;iResult;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;SOCKET sock;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;addrinfo hints, *res;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;reuseaddr = <font color="#ff00ff">1</font>; <font color="#0000ff">/*</font><font color="#0000ff">&nbsp;True </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*directory = <font color="#ff00ff">&quot;.&quot;</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*port = PORT;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Process command line </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(argc &gt; <font color="#ff00ff">1</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;directory = argv[<font color="#ff00ff">1</font>];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(argc &gt; <font color="#ff00ff">2</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;port = argv[<font color="#ff00ff">2</font>];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Initialise Winsock </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;((iResult = WSAStartup(wVersion, &amp;wsaData)) != <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fprintf(<font color="#ff00ff">stderr</font>, <font color="#ff00ff">&quot;WSAStartup failed: </font><font color="#6a5acd">%d</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, iResult);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Get the address info </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;ZeroMemory(&amp;hints, <font color="#804040"><b>sizeof</b></font>&nbsp;hints);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hints.ai_family = AF_INET;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;hints.ai_socktype = SOCK_STREAM;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(getaddrinfo(<font color="#ff00ff">NULL</font>, port, &amp;hints, &amp;res) != <font color="#ff00ff">0</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<font color="#ff00ff">&quot;getaddrinfo&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Create the socket </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;sock = socket(res-&gt;ai_family, res-&gt;ai_socktype, res-&gt;ai_protocol);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(sock == INVALID_SOCKET) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<font color="#ff00ff">&quot;socket&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WSACleanup();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Enable the socket to reuse the address </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*)&amp;reuseaddr, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>int</b></font>)) == SOCKET_ERROR) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<font color="#ff00ff">&quot;setsockopt&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WSACleanup();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Bind to the address </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(bind(sock, res-&gt;ai_addr, res-&gt;ai_addrlen) == SOCKET_ERROR) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<font color="#ff00ff">&quot;bind&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WSACleanup();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Listen </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(listen(sock, BACKLOG) == SOCKET_ERROR) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<font color="#ff00ff">&quot;listen&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WSACleanup();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;freeaddrinfo(res);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Register the control handler </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!SetConsoleCtrlHandler((PHANDLER_ROUTINE)CtrlHandler, TRUE)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fprintf(<font color="#ff00ff">stderr</font>, <font color="#ff00ff">&quot;Couldn't set control handler</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WSACleanup();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">1</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Directory is </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, directory);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Running on port </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, port);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Main loop </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;(<font color="#ff00ff">1</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;size = <font color="#804040"><b>sizeof</b></font>(<font color="#2e8b57"><b>struct</b></font>&nbsp;sockaddr);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;sockaddr_in their_addr;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SOCKET newsock;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ZeroMemory(&amp;their_addr, <font color="#804040"><b>sizeof</b></font>&nbsp;(<font color="#2e8b57"><b>struct</b></font>&nbsp;sockaddr));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;newsock = accept(sock, (<font color="#2e8b57"><b>struct</b></font>&nbsp;sockaddr*)&amp;their_addr, &amp;size);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(newsock == INVALID_SOCKET) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;perror(<font color="#ff00ff">&quot;accept</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>else</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Got a connection from </font><font color="#6a5acd">%s</font><font color="#ff00ff">&nbsp;on port </font><font color="#6a5acd">%d</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;inet_ntoa(their_addr.sin_addr), ntohs(their_addr.sin_port));<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;handle(newsock, directory);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;closesocket(newsock);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;WSACleanup() is called in CtrlHandler </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+<br>
+</font></body>
+</html>

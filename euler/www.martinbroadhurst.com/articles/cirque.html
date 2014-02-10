@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Circular queue</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<p><a href="../index.html">Martin Broadhurst</a> &gt; <a href="../data-structures.html">Data Structures</a>
+<body>
+<h1>Circular queue</h1>
+<h2>Contents</h2>
+<ul>
+<li><a href="cirque.html#introduction">Introduction</a>
+<li><a href="cirque.html#creation">Creation</a>
+<li><a href="cirque.html#adding-elements">Adding elements</a>
+<li><a href="cirque.html#removing-elements">Removing elements</a>
+<li><a href="cirque.html#accessing-elements">Accessing elements</a>
+<li><a href="cirque.html#example-program">Example program</a>
+<li><a href="cirque.html#source-code">Source code</a>
+<li><a href="cirque.html#download">Download</a>
+</ul>
+<a name="introduction"></a>
+<h2>Introduction</h2>
+<p>A circular queue, or <i>cirque</i>, or <i>ring buffer</i> is an array that wraps around, so that it can be used as a queue without walking backwards in memory.
+<p>This implementation reallocates the buffer when it becomes full (i.e., when the head and tail of the queue meet).
+<a name="creation"></a>
+<h2>Creation</h2>
+<p>Create a cirque with <span class="name">MBcirque_create</span>.
+It takes an unsigned integer for the initial size.
+<a name="adding-elements"></a>
+<h2>Adding elements</h2>
+<p>Add to the back of the queue with <span class="name">MBcirque_insert</span>.
+<a name="removing-elements"></a>
+<h2>Removing elements</h2>
+<p>Remove from the head of the queue with <span class="name">MBcirque_remove</span>.
+<a name="accessing-elements"></a>
+<h2>Accessing elements</h2>
+<p>View the element at the head of the queue without removing it with <span class="name">MBcirque_peek</span>.
+<p>Iterate over all elements with <span class="name">MBcirque_for_each</span>.
+<a name="example-program"></a>
+<h2>Example</h2>
+<font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;string.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdlib.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;cirque.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBcirque * cirque;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;buf[<font color="#ff00ff">16</font>];<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;f;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;max = <font color="#ff00ff">100</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;size = <font color="#ff00ff">10</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;limit = <font color="#ff00ff">20</font>;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;cirque = MBcirque_create(size);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(f = <font color="#ff00ff">0</font>; f &lt; max; f++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sprintf(buf, <font color="#ff00ff">&quot;Item </font><font color="#6a5acd">%d</font><font color="#ff00ff">&quot;</font>, f);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(f &gt;= limit) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Start removing at limit to show the cirque doesn't keep growing </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;*data = MBcirque_remove(cirque);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Removed </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, data);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;free(data);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Inserting </font><font color="#6a5acd">%s</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, buf);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBcirque_insert(cirque, strdup(buf));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBcirque_for_each(cirque, (MBforfn)puts);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Size is </font><font color="#6a5acd">%d</font><font color="#ff00ff">&nbsp;(should be </font><font color="#6a5acd">%d</font><font color="#ff00ff">)</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, cirque-&gt;size, limit);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBcirque_for_each(cirque, free);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBcirque_delete(cirque);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+<a name="source-code"></a>
+<h2>Source code</h2>
+<ul>
+	<li><a href="../source/mbcommon.h.html">mbcommon.h</a>
+	<li><a href="../source/iterator.h.html">iterator.h</a>
+	<li><a href="../source/iterator.c.html">iterator.c</a>
+	<li><a href="../source/cirque.h.html">cirque.h</a>
+	<li><a href="../source/cirque.c.html">cirque.c</a>
+</ul>
+<a name="download"></a>
+<h2>Download</h2>
+<p>The following archives contain the full source code, example programs and build instructions for all of the <a href="../data-structures.html">data structures</a>:
+<ul>
+	<li><a href="../downloads/mbds.tar.gz">mbds.tar.gz</a> (27 KB, Linux)
+	<li><a href="../downloads/mbds.zip">mbds.zip</a> (55 KB, Windows)
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="../index.html">Martin Broadhurst</a>
+</div>
+</body>
+</html>

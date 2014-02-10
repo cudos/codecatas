@@ -1,0 +1,388 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+<HEAD>
+<TITLE>Graph Data Structures</TITLE>
+</HEAD>
+<style type="text/css">
+	.code { font-family: monospace, serif, courier; font-size: 10pt; padding-top: 4px; padding-bottom: 4px; }
+	.set  { font-family: monospace, serif, courier; font-size: 12pt; }
+	.matrix  { font-family: monospace, serif, courier; font-size: 12pt; white-space: pre }
+	.implementation { color: ForestGreen }
+	.implementation-list { padding-top: 4px; padding-bottom: 4px }
+</style>
+<BODY>
+<p><a href="index.html">Martin Broadhurst</a>
+<h1>Graph Data Structures</h1>
+<h2>Contents</h2>
+<ul>
+<li><a href="graph-data-structures.html#introduction">Introduction</a>
+<li><a href="graph-data-structures.html#definitions">Definitions</a>
+<li><a href="graph-data-structures.html#functions">Functions</a>
+<li><a href="graph-data-structures.html#representation-of-vertices-and-edges">Representation of vertices and edges</a>
+<li><a href="graph-data-structures.html#example-program">Example program</a>
+<li><a href="graph-data-structures.html#graph-representations">Graph representations</a>
+<ul class="implementation-list">
+<li><a class="implementation" href="graph-data-structures.html#intuitive">The intuitive representation</a>
+<li><a class="implementation" href="graph-data-structures.html#adjacency-list">Adjacency List</a>
+<li><a class="implementation" href="graph-data-structures.html#adjacency-matrix">Adjacency Matrix</a>
+<li><a class="implementation" href="graph-data-structures.html#incidence-matrix">Incidence Matrix</a>
+<li><a class="implementation" href="graph-data-structures.html#incidence-list">Incidence List</a>
+</ul>
+<li><a href="graph-data-structures.html#source-code">Source code</a>
+</ul>
+<a name="introduction"></a>
+<h2>Introduction</h2>
+<p>In this document, I introduce the concept of a graph and describe some ways of representing graphs in the C programming language.
+		<a name="definitions"></a>
+<h2>Definitions</h2>
+<h3>Graphs, vertices and edges</h3>
+<p>A <i>graph</i> is a collection of nodes called <i>vertices</i>, and the connections between them, called <i>edges</i>.
+<h3>Undirected and directed graphs</h3>
+When the edges in a graph have a direction, the graph is called a <i>directed graph</i> or <i>digraph</i>, and the edges are called <i>directed edges</i> or <i>arcs</i>.
+Here, I shall be exclusively concerned with directed graphs, and so when I refer to an edge, I mean a directed edge.
+This is not a limitation, since an undirected graph can easily be implemented as a directed graph by adding edges between connected vertices in both directions.
+<p>A representation can often be simplified if it is only being used for undirected graphs, and I'll mention in passing how this can be achieved.
+<h3>Neighbours and adjacency</h3>
+<p>A vertex that is the end-point of an edge is called a <i>neighbour</i> of the vertex that is its starting-point.
+The first vertex is said to be <i>adjacent</i> to the second.
+<h3>An example</h3>
+<p>The following diagram shows a graph with 5 vertices and 7 edges.
+The edges between A and D and B and C are pairs that make a bidirectional connection, represented here by a double-headed arrow.
+<p><img align="center" src="Graph.jpg" width="316" height="201"></img>
+<h3>Mathematical definition</h3>
+<p>More formally, a graph is an ordered pair, G = &lt;V, A&gt;, where V is the set of vertices, and A, the set of arcs, is itself a set of ordered pairs of vertices.
+<p>For example, the following expressions describe the graph shown above in set-theoretic language:
+<div class="set">
+<p>V = {A, B, C, D, E}
+<p>A = {&lt;A, B&gt;, &lt;A, D&gt;, &lt;B, C&gt;, &lt;C, B&gt;, &lt;D, A&gt;, &lt;D, C&gt;, &lt;D, E&gt;}
+</div>
+	<a name="functions"></a>
+<h2>Functions</h2>
+<p>A graph implementation needs a basic set of functions to assemble and modify graphs, and to enumerate vertices, edges and neighbours.
+<p>The following functions are provided by each representation.
+These are the declarations for the <a href="graph-data-structures.html#intuitive">intuitive representation</a>, MBgraph1:
+<dl>
+	<dt class="code">MBgraph1 *   MBgraph1_create(void);</dt>
+	<dd>Create an empty graph</dd>
+	<dt class="code">void         MBgraph1_delete(MBgraph1 *graph);</dt>
+	<dd>Delete a graph</dd>
+	<dt class="code">MBvertex *   MBgraph1_add(MBgraph1 *graph, const char *name, void *data);</dt>
+	<dd>Add a vertex to the graph with a name, and optionally some data</dd>
+	<dt class="code">MBvertex *   MBgraph1_get_vertex(const MBgraph1 *graph, const char *name);</dt>
+	<dd>Retrieve a vertex by name</dd>
+	<dt class="code">void *       MBgraph1_remove(MBgraph1 *graph, MBvertex *vertex);</dt>
+	<dd>Remove a vertex</dd>
+	<dt class="code">void         MBgraph1_add_edge(MBgraph1 *graph, MBvertex *vertex1, MBvertex *vertex2);</dt>
+	<dd>Create a directed edge between vertex1 and vertex2</dd>
+	<dt class="code">void         MBgraph1_remove_edge(MBgraph1 *graph, MBvertex *vertex1, MBvertex *vertex2);</dt>
+	<dd>Remove the directed edge from vertex1 to vertex2</dd>
+	<dt class="code">unsigned int MBgraph1_get_adjacent(const MBgraph1 *graph, const MBvertex *vertex1, const MBvertex *vertex2);</dt>
+	<dd>Determine if there is an edge from vertex1 to vertex2</dd>
+	<dt class="code">MBiterator * MBgraph1_get_neighbours(const MBgraph1 *graph, const MBvertex *vertex);</dt>
+	<dd>Get the neighbours of a vertex</dd>
+	<dt class="code">MBiterator * MBgraph1_get_edges(const MBgraph1 *graph);</dt>
+	<dd>Get all of the edges in the graph</dd>
+	<dt class="code">MBiterator * MBgraph1_get_vertices(const MBgraph1 *graph);</dt>
+	<dd>Get all of the vertices in the graph</dd>
+	<dt class="code">unsigned int MBgraph1_get_neighbour_count(const MBgraph1 * graph, const MBvertex * vertex);</dt>
+	<dd>Get the count of neighbours of a vertex</dd>
+	<dt class="code">unsigned int MBgraph1_get_edge_count(const MBgraph1 * graph);</dt>
+	<dd>Get the count of edges in the graph</dd>
+	<dt class="code">unsigned int MBgraph1_get_vertex_count(const MBgraph1 * graph);</dt>
+	<dd>Get the count of vertices in the graph</dd>
+</dl>
+<a name="representation-of-vertices-and-edges"></a>
+<h2>Representation of vertices and edges</h2>
+<h3>Vertices</h3>
+<p>All of the graph representations use the following definition of a vertex:
+<p><font face="monospace" size="2">
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>char</b></font>&nbsp;* name;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;* data;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;* body;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBdeletefn deletefn;<br>
+} MBvertex;<br>
+<br>
+</font>
+<p>Note the <var>body</var> field, which is not of interest to clients, but is used by some representations (<a href="graph-data-structures.html#adjacency-list">Adjacency List</a> and <a href="graph-data-structures.html#incidence-list">Incidence List</a>) to add per-vertex strucure.
+<p>The following functions are provided for working with vertices:
+<dl>
+<dt class="code">const char * MBvertex_get_name(const MBvertex *vertex);</dt>
+<dd>Get the vertex's name</dd>
+<dt class="code">void *       MBvertex_get_data(const MBvertex *vertex);</dt>
+<dd>Get the data associated with a vertex</dd>
+</dl>
+<h3>Edges</h3>
+<p>How edges are implemented internally varies with the representation.
+In fact, in three representations, <a href="graph-data-structures.html#adjacency-list">Adjacency List</a>, <a href="graph-data-structures.html#adjacency-matrix">Adjacency Matrix</a> and <a href="graph-data-structures.html#incidence-matrix">Incidence Matrix</a>, edges do not exist internally as objects at all.
+From the viewpoint of clients however, edges, as enumerated by the iterator returned by the function to retrieve edges, are this structure:
+<p><font face="monospace" size="2">
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBvertex *from;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBvertex *to;<br>
+} MBedge;<br>
+</font>
+<p>The following functions are provided for working with edges:
+<dl>
+<dt class="code">const MBvertex * MBedge_get_from(const MBedge * edge);</dt>
+<dd>Get the vertex that is the starting-point of an edge</dd\>
+<dt class="code">const MBvertex * MBedge_get_to(const MBedge * edge);</dt>
+<dd>Get the vertex that is the end-point of an edge</dd>
+</dl>
+<a name="example-program"></a>
+<h2>Example program</h2>
+<p>The following program constructs the graph shown in the introduction using the <a href="graph-data-structures.html#intuitive">intuitive representation</a>, MBgraph1, and then enumerates the vertices, neighbours and edges:
+<p><font face="monospace" size="2">
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;stdio.h&gt;</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;graph1.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>int</b></font>&nbsp;main(<font color="#2e8b57"><b>void</b></font>)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBgraph1 *graph;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBvertex *vertex;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBvertex *A, *B, *C, *D, *E;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBiterator *vertices, *edges;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBedge *edge;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Create a graph </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;graph = MBgraph1_create();<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Add vertices </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;A = MBgraph1_add(graph, <font color="#ff00ff">&quot;A&quot;</font>, <font color="#ff00ff">NULL</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;B = MBgraph1_add(graph, <font color="#ff00ff">&quot;B&quot;</font>, <font color="#ff00ff">NULL</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;C = MBgraph1_add(graph, <font color="#ff00ff">&quot;C&quot;</font>, <font color="#ff00ff">NULL</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;D = MBgraph1_add(graph, <font color="#ff00ff">&quot;D&quot;</font>, <font color="#ff00ff">NULL</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;E = MBgraph1_add(graph, <font color="#ff00ff">&quot;E&quot;</font>, <font color="#ff00ff">NULL</font>);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Add edges </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBgraph1_add_edge(graph, A, B);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBgraph1_add_edge(graph, A, D);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBgraph1_add_edge(graph, B, C);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBgraph1_add_edge(graph, C, B);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBgraph1_add_edge(graph, D, A);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBgraph1_add_edge(graph, D, C);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBgraph1_add_edge(graph, D, E);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Display </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Vertices (</font><font color="#6a5acd">%d</font><font color="#ff00ff">) and their neighbours:</font><font color="#6a5acd">\n\n</font><font color="#ff00ff">&quot;</font>, MBgraph1_get_vertex_count(graph));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;vertices = MBgraph1_get_vertices(graph);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;((vertex = MBiterator_get(vertices))) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBiterator *neighbours;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBvertex *neighbour;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;n = <font color="#ff00ff">0</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;</font><font color="#6a5acd">%s</font><font color="#ff00ff">&nbsp;(</font><font color="#6a5acd">%d</font><font color="#ff00ff">): &quot;</font>, MBvertex_get_name(vertex), MBgraph1_get_neighbour_count(graph, vertex));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;neighbours = MBgraph1_get_neighbours(graph, vertex);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;((neighbour = MBiterator_get(neighbours))) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;</font><font color="#6a5acd">%s</font><font color="#ff00ff">&quot;</font>, MBvertex_get_name(neighbour));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(n &lt; MBgraph1_get_neighbour_count(graph, vertex) - <font color="#ff00ff">1</font>) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fputs(<font color="#ff00ff">&quot;, &quot;</font>, <font color="#ff00ff">stdout</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;n++;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MBiterator_delete(neighbours);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBiterator_delete(vertices);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;Edges (</font><font color="#6a5acd">%d</font><font color="#ff00ff">):</font><font color="#6a5acd">\n\n</font><font color="#ff00ff">&quot;</font>, MBgraph1_get_edge_count(graph));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;edges = MBgraph1_get_edges(graph);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>while</b></font>&nbsp;((edge = MBiterator_get(edges))) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(<font color="#ff00ff">&quot;&lt;</font><font color="#6a5acd">%s</font><font color="#ff00ff">, </font><font color="#6a5acd">%s</font><font color="#ff00ff">&gt;</font><font color="#6a5acd">\n</font><font color="#ff00ff">&quot;</font>, MBvertex_get_name(MBedge_get_from(edge)), MBvertex_get_name(MBedge_get_to(edge)));<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;putchar(<font color="#6a5acd">'\n'</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBiterator_delete(edges);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;Delete </font><font color="#0000ff">*/</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBgraph1_delete(graph);<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;<font color="#ff00ff">0</font>;<br>
+}<br>
+</font>
+</font>
+<a name="graph-representations"></a>
+<h2>Graph representations</h2>
+<P>There are essentially 5 ways of representing a graph:</P>
+<ul>
+<li><a class="implementation" href="graph-data-structures.html#intuitive">The intuitive representation</a>
+<li><a class="implementation" href="graph-data-structures.html#adjacency-list">Adjacency List</a>
+<li><a class="implementation" href="graph-data-structures.html#adjacency-matrix">Adjacency Matrix</a>
+<li><a class="implementation" href="graph-data-structures.html#incidence-matrix">Incidence Matrix</a>
+<li><a class="implementation" href="graph-data-structures.html#incidence-list">Incidence List</a>
+</ul>
+<a name="intuitive"></a>
+<h3 class="implementation">The intuitive representation: MBgraph1</h3>
+<p>What I call the &quot;intuitive&quot; and can also called the &quot;object-oriented&quot; representation is a direct translation of the mathematical definition of a graph into a data type:
+
+<p><font face="monospace" size="2">
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBset * vertices;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBset * edges;<br>
+} MBgraph1;<br>
+</font>
+<ul>
+<li><a href="source/graph1.h.html">graph1.h</a>
+<li><a href="source/graph1.c.html">graph1.c</a>
+</ul>
+<ul>
+<li>Adding a vertex simply requires adding it to the vertex set.
+<li>Adding an edge simply requires adding it to the edge set.
+<li>Removing vertices and edges simply means removing them from the respective sets.
+<li>To find a vertex's neighbours, search the edge set for edges having the vertex as the <i>from</i> field.
+<li>To determine if two vertices are adjacent, search the edge set for an edge having the first vertex as its <i>from</i> field, and the second vertex as its <i>to</i> field.
+<li>Getting all of the edges is easy; just return an iterator over the edge set.
+<li>For undirected graphs, each edge would be stored only once, and getting neighbours and adjacency testing would look at both vertices.
+<br>The edge object would not be <i>from</i> and <i>to</i> but simply <i>first</i> and <i>second</i>, i.e., an unordered pair.
+<li>This is one of the representations where edges exist internally as objects (<a href="graph-data-structures.html#incidence-list">Incidence List</a> is the other).
+<li>This is most like a sparse <a href="graph-data-structures.html#adjacency-matrix">Adjacency Matrix</a>, with the edge set holding those pairs that are adjacent, and non-adjacent pairs being absent.
+</ul>
+<a name="adjacency-list"></a>
+<h3 class="implementation">Adjacency List: MBgraph2</h3>
+<P>The graph is made up of a set of vertices.
+Each vertex contains a set of vertices for its neighbours.
+<p><font face="monospace" size="2">
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBset *vertices;<br>
+} MBgraph2;<br>
+<br>
+<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBset *neighbours;<br>
+} vertex_body;<br>
+</font>
+<ul>
+<li><a href="source/graph2.h.html">graph2.h</a>
+<li><a href="source/graph2.c.html">graph2.c</a>
+</ul>
+<p>For the graph shown in the introduction, the sets of neighbours would look like this:
+<div class="set">
+<p>A: {B, D}
+<p>B: {C}
+<p>C: {B}
+<p>D: {A, C, E}
+<p>E: {}
+</div>
+<ul>
+<li>Adding a vertex just means adding it to the vertex set.
+<li>Adding an edge means adding the end-point of it to the starting vertex's neighbour set.
+<li>It is easy to go from a vertex to its neighbours, because the vertex stores them all.
+<br>Just return an iterator over them.
+<br>This makes the <i>graph</i> argument in the function to retrieve neighbours unnecessary in this implementation.
+<li>Testing for adjacency is easy; just search the first vertex's neighbours for the second vertex.
+<li>Getting all edges is more difficult to implement in this representation, because edges don't exist as objects.
+<br>You need to iterate over the neighbours of each vertex in turn, and construct the edge from the vertex and the neighbour.
+</ul>
+<a name="adjacency-matrix"></a>
+<h3 class="implementation">Adjacency Matrix: MBgraph3</h3>
+<P>The graph is made up of a set of vertices and a matrix, whose rows and columns are indexed by vertices, and which contains a 1 entry if the vertices are connected.
+<p><font face="monospace" size="2">
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBset&nbsp;&nbsp;&nbsp;&nbsp;* vertices;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBmatrix * edges;<br>
+} MBgraph3;<br>
+</font>
+<ul>
+<li><a href="source/graph3.h.html">graph3.h</a>
+<li><a href="source/graph3.c.html">graph3.c</a>
+</ul>
+<p>The adjacency matrix for the graph shown in the introduction would look like this:
+<div class="matrix">
+  ABCDE
+A 01010
+B 00100
+C 01000
+D 10101
+E 00000
+</div>
+<ul>
+<li>When adding a vertex, add a row and column to the matrix.
+<li>When removing a vertex, remove its row and column.
+<br>As adding and removing rows and columns is expensive, these make the adjacency matrix unsuitable for graphs in which vertices are frequently added and removed.
+<li>Adding and removing edges is easy however, and requires no allocation or deallocation of memory, just setting a matrix element.
+<li>To get neighbours, look along the vertex's row for 1s.
+<li>To determine adjacency, look for a 1 at the intersection of the first vertex's row and the second vertex's column.
+<li>To get the edge set, find all of the 1s in the matrix and construct the edges from the corresponding vertices.
+<li>If the graph is undirected, the matrix will be symmetrical about the main diagonal.
+<br>This means that you can drop half of it, making a triangular matrix.
+<li>The vertex set needs to be ordered so that the index number of vertices can be looked up, or the matrix needs to be a 2-d map keyed by the vertices themselves.
+<li>Memory used for edges is a constant |V|<sup>2</sup>.
+<br>The best use of this is a graph that is nearly complete, i.e., has a lot of edges.
+<li>The matrix can be sparse; this relates the memory usage more closely to the number of edges.
+<br>It also makes addition and removal of columns easier (no block shifts), but requires renumbering afterwards.
+<li>You can use booleans or bits in the matrix to save memory.
+</ul>
+<a name="incidence-matrix"></a>
+<h3 class="implementation">Incidence Matrix: MBgraph4</h3>
+<p>The graph is made up of a set of vertices and a matrix, as in <a href="graph-data-structures.html#adjacency-matrix">Adjacency Matrix</a>, but the matrix is vertices &times; edges, with each column containing two non-zero entries, one for the starting-point vertex and one for the end-point.
+<p><font face="monospace" size="2">
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBset&nbsp;&nbsp;&nbsp;&nbsp;* vertices;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBmatrix * edges;<br>
+} MBgraph4;<br>
+</font>
+<ul>
+<li><a href="source/graph4.h.html">graph4.h</a>
+<li><a href="source/graph4.c.html">graph4.c</a>
+</ul>
+<p>The incidence matrix for the graph shown in the introduction looks like this (1 means &quot;from&quot; and 2 means &quot;to&quot;):
+<div class="matrix">
+A 1100200
+B 2012000
+C 0021020
+D 0200111
+E 0000002
+</div>
+<ul>
+<li>When you add a vertex, you add a row to the matrix.
+<li>When you add an edge, you add a column to the matrix.
+<li>When you remove a vertex, you need to remove all of the columns containing the vertex from the matrix.
+<li>Getting the edges means iterating over the columns and constructing the edges from the two values.
+<li>To find neighbours, look for 1s in the vertex's row, and in each such column look for the 2 value, which is the neighbour.
+<li>To determine adjacency, find a column containing a 1 in the starting-point vertex's row, and a 2 in the end-point's row.
+<li>For an undirected graph, you have one column per edge, and just the value 1 for &quot;connected&quot;, so each column contains two 1s.
+</ul>
+<a name="incidence-list"></a>
+<h3 class="implementation">Incidence List: MBgraph5</h3>
+<p>There is a set of vertices as in <a href="graph-data-structures.html#adjacency-list">Adjacency List</a>, but each vertex stores a list of the edges that it is the starting-point of, rather than neighbours.
+<p><font face="monospace" size="2">
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBset * vertices;<br>
+} MBgraph5;<br>
+<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;MBset *edges;<br>
+} vertex_body;<br>
+</font>
+<ul>
+<li><a href="source/graph5.h.html">graph5.h</a>
+<li><a href="source/graph5.c.html">graph5.c</a>
+</ul>
+<p>For the graph shown in the introduction, the sets of edges would look like this:
+<div class="set">
+<p>A: {&lt;A, B&gt;, &lt;A, D&gt;}
+<p>B: {&lt;B, C&gt;}
+<p>C: {&lt;C, B&gt;}
+<p>D: {&lt;D, A&gt;, &lt;D, C&gt;, &lt;D, E&gt;}
+<p>E: {}
+</div>
+<ul>
+<li>Adding a vertex just means adding it to the vertex set.
+<li>Adding an edge means adding it to its starting vertex's edge set.
+<li>Finding if two vertices are adjacent requires searching the first vertex's edge set for an edge containing the second vertex as its <i>to</i> field.
+<li>Getting the neighbours requires retrieving them from the pairs in the set of edges for the vertex.
+<li>Getting the edge set requires enumerating each of the vertices' edge sets in turn. 
+<li>You can store the edges in the graph object as well as in each vertex.
+</ul>
+<a name="source-code"></a>
+<h2>Source code</h2>
+<p>The following archives contain the full source code, example program and build instructions:
+<ul>
+	<li><a href="downloads/mbgraph.tar.gz">mbgraph.tar.gz</a> (13 KB, Linux)
+	<li><a href="downloads/mbgraph.zip">mbgraph.zip</a> (21 KB, Windows)
+</ul>
+<div align="center">
+<p>Copyright (C) 2010 <a href="index.html">Martin Broadhurst</a>
+</div>
+</BODY>
+</HTML>

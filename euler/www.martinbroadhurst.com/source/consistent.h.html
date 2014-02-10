@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>consistent.h</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">//</font><br>
+<font color="#0000ff">//&nbsp;&nbsp;consistent.h - a consistent hash ring</font><br>
+<font color="#0000ff">//&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst </font><br>
+<font color="#0000ff">//&nbsp;&nbsp;www.martinbroadhurst.com</font><br>
+<font color="#0000ff">//</font><br>
+<br>
+<font color="#a020f0">#ifndef CONSISTENT_H</font><br>
+<font color="#a020f0">#define CONSISTENT_H</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;map&gt;</font><br>
+<font color="#a020f0">#ifdef __GNUC__</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;ext/hash_map&gt;</font><br>
+<font color="#a020f0">#define HASH_NAMESPACE __gnu_cxx</font><br>
+<font color="#a020f0">#else</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;hash_map&gt;</font><br>
+<font color="#a020f0">#define HASH_NAMESPACE std</font><br>
+<font color="#a020f0">#endif</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;string&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;sstream&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>namespace</b></font><br>
+{<br>
+<br>
+<font color="#2e8b57"><b>class</b></font>&nbsp;StringifyException<br>
+{<br>
+};<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;T&gt;<br>
+std::string Stringify(<font color="#2e8b57"><b>const</b></font>&nbsp;T&amp; t)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::ostringstream os;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(!(os &lt;&lt; t))<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>throw</b></font>&nbsp;StringifyException();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;os.str();<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;&gt;<br>
+std::string Stringify(<font color="#2e8b57"><b>const</b></font>&nbsp;std::string&amp; str)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;str;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;&gt;<br>
+std::string Stringify(<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>* <font color="#2e8b57"><b>const</b></font>&amp; str)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;str;<br>
+}<br>
+<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>namespace</b></font>&nbsp;Consistent<br>
+{<br>
+<br>
+<font color="#2e8b57"><b>class</b></font>&nbsp;EmptyRingException<br>
+{<br>
+};<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;Node, <font color="#2e8b57"><b>class</b></font>&nbsp;Data, <font color="#2e8b57"><b>class</b></font>&nbsp;Hash = HASH_NAMESPACE::hash&lt;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*&gt; &gt;<br>
+<font color="#2e8b57"><b>class</b></font>&nbsp;HashRing<br>
+{<br>
+<font color="#804040"><b>public</b></font>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>typedef</b></font>&nbsp;std::map&lt;<font color="#2e8b57"><b>size_t</b></font>, Node&gt; NodeMap;<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;HashRing(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;replicas)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: replicas_(replicas), hash_(HASH_NAMESPACE::hash&lt;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>char</b></font>*&gt;())<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;HashRing(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;replicas, <font color="#2e8b57"><b>const</b></font>&nbsp;Hash&amp; hash)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: replicas_(replicas), hash_(hash)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;AddNode(<font color="#2e8b57"><b>const</b></font>&nbsp;Node&amp; node);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;RemoveNode(<font color="#2e8b57"><b>const</b></font>&nbsp;Node&amp; node);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;Node&amp; GetNode(<font color="#2e8b57"><b>const</b></font>&nbsp;Data&amp; data) <font color="#2e8b57"><b>const</b></font>;<br>
+<br>
+<font color="#804040"><b>private</b></font>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;NodeMap ring_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>const</b></font>&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;replicas_;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Hash hash_;<br>
+};<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;Node, <font color="#2e8b57"><b>class</b></font>&nbsp;Data, <font color="#2e8b57"><b>class</b></font>&nbsp;Hash&gt;<br>
+<font color="#2e8b57"><b>size_t</b></font>&nbsp;HashRing&lt;Node, Data, Hash&gt;::AddNode(<font color="#2e8b57"><b>const</b></font>&nbsp;Node&amp; node)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;hash;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string nodestr = Stringify(node);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;r = <font color="#ff00ff">0</font>; r &lt; replicas_; r++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hash = hash_((nodestr + Stringify(r)).c_str());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ring_[hash] = node;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;hash;<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;Node, <font color="#2e8b57"><b>class</b></font>&nbsp;Data, <font color="#2e8b57"><b>class</b></font>&nbsp;Hash&gt;<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;HashRing&lt;Node, Data, Hash&gt;::RemoveNode(<font color="#2e8b57"><b>const</b></font>&nbsp;Node&amp; node)<br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;std::string nodestr = Stringify(node);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>for</b></font>&nbsp;(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;r = <font color="#ff00ff">0</font>; r &lt; replicas_; r++) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;hash = hash_((nodestr + Stringify(r)).c_str());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ring_.erase(hash);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+}<br>
+<br>
+<font color="#2e8b57"><b>template</b></font>&nbsp;&lt;<font color="#2e8b57"><b>class</b></font>&nbsp;Node, <font color="#2e8b57"><b>class</b></font>&nbsp;Data, <font color="#2e8b57"><b>class</b></font>&nbsp;Hash&gt;<br>
+<font color="#2e8b57"><b>const</b></font>&nbsp;Node&amp; HashRing&lt;Node, Data, Hash&gt;::GetNode(<font color="#2e8b57"><b>const</b></font>&nbsp;Data&amp; data) <font color="#2e8b57"><b>const</b></font><br>
+{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(ring_.empty()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>throw</b></font>&nbsp;EmptyRingException();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>size_t</b></font>&nbsp;hash = hash_(Stringify(data).c_str());<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>typename</b></font>&nbsp;NodeMap::const_iterator it;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Look for the first node &gt;= hash</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;it = ring_.lower_bound(hash);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>if</b></font>&nbsp;(it == ring_.end()) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#0000ff">// Wrapped around; get the first node</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it = ring_.begin();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#804040"><b>return</b></font>&nbsp;it-&gt;second;<br>
+}<br>
+<br>
+}<br>
+<br>
+<font color="#a020f0">#endif</font>&nbsp;<font color="#0000ff">// CONSISTENT_H</font><br>
+</font></body>
+</html>

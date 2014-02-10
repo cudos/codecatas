@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>dynarray.h</title>
+<meta name="Generator" content="Vim/7.2">
+<meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
+</head>
+<body bgcolor="#ffffff" text="#000000"><font face="monospace" size="2">
+<font color="#0000ff">/*</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;dynarray.h - a dynamic array</font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;Copyright (C) 2010 Martin Broadhurst </font><br>
+<font color="#0000ff">&nbsp;*&nbsp;&nbsp;www.martinbroadhurst.com</font><br>
+<font color="#0000ff">&nbsp;</font><font color="#0000ff">*/</font><br>
+<br>
+<font color="#a020f0">#ifndef DYNARRAY_H</font><br>
+<font color="#a020f0">#define DYNARRAY_H</font><br>
+<br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;iterator.h&gt;</font><br>
+<font color="#a020f0">#include </font><font color="#ff00ff">&lt;mbcommon.h&gt;</font><br>
+<br>
+<font color="#2e8b57"><b>struct</b></font>&nbsp;MBdynarray {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>void</b></font>&nbsp;** buffer;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;size;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;count;<br>
+};<br>
+<br>
+<font color="#2e8b57"><b>typedef</b></font>&nbsp;<font color="#2e8b57"><b>struct</b></font>&nbsp;MBdynarray MBdynarray;<br>
+<br>
+MBdynarray * MBdynarray_create(<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;startsize);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBdynarray_empty(MBdynarray * array);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBdynarray_delete(MBdynarray * array);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBdynarray_add_tail(MBdynarray * array, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBdynarray_add_head(MBdynarray * array, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBdynarray_remove_tail(MBdynarray * array);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBdynarray_remove_head(MBdynarray * array);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBdynarray_insert(MBdynarray *array, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;pos, <font color="#2e8b57"><b>void</b></font>&nbsp;*data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBdynarray_remove(MBdynarray *array, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;index);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBdynarray_get(<font color="#2e8b57"><b>const</b></font>&nbsp;MBdynarray * array, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;pos);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;* MBdynarray_set(MBdynarray * array, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;pos, <font color="#2e8b57"><b>void</b></font>&nbsp;* data);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBdynarray_for_each(<font color="#2e8b57"><b>const</b></font>&nbsp;MBdynarray * array, MBforfn forfn);<br>
+<font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;MBdynarray_get_count(<font color="#2e8b57"><b>const</b></font>&nbsp;MBdynarray * array);<br>
+<font color="#2e8b57"><b>void</b></font>&nbsp;MBdynarray_set_size(MBdynarray * array, <font color="#2e8b57"><b>unsigned</b></font>&nbsp;<font color="#2e8b57"><b>int</b></font>&nbsp;size);<br>
+MBiterator *MBdynarray_iterator(<font color="#2e8b57"><b>const</b></font>&nbsp;MBdynarray *array);<br>
+<br>
+<font color="#a020f0">#endif</font>&nbsp;<font color="#0000ff">/*</font><font color="#0000ff">&nbsp;DYNARRAY_H </font><font color="#0000ff">*/</font><br>
+</font></body>
+</html>

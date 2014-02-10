@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="author" content="Colin Hughes" />
+<meta name="description" content="A website dedicated to the fascinating world of mathematics and programming" />
+<meta name="keywords" content="programming,mathematics,problems,puzzles" />
+
+<title>Project Euler</title>
+<link rel="shortcut icon" href="favicon.ico" />
+<link rel="stylesheet" type="text/css" href="style_main.css" />
+<link rel="stylesheet" type="text/css" href="style_light.css" />
+<script type="text/x-mathjax-config">
+   MathJax.Hub.Config({
+      jax: ["input/TeX", "output/HTML-CSS"],
+      tex2jax: {
+         inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+         displayMath: [ ["$$","$$"], ["\\[","\\]"] ],
+         processEscapes: true
+      },
+      "HTML-CSS": { availableFonts: ["TeX"] }
+   });
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+</script>
+</head>
+
+<body>
+<div id="container">
+
+   <div id="nav" class="noprint">
+      <ul>
+<li><a href="secure=3fcc6" title="About" accesskey="h">About</a></li>
+<li><a href="register" title="Register" accesskey="1">Register</a></li>
+<li id="current"><a href="problems" title="Problems" accesskey="2">Problems</a></li>
+<li><a href="login" title="Login" accesskey="3">Login</a></li>
+      </ul>
+   </div>
+<div id="info_panel"><a href="rss2_euler.xml"><img src="images/icon_rss.png" alt="RSS Feed" title="RSS Feed" /></a><a href="secure=49750"><img src="images/icon_lock.png" alt="Use secure connection" title="Use secure connection" /></a></div>
+
+<div id="logo" class="noprint">
+   <img src="images/pe_banner_light.png" alt="Project Euler .net" />
+</div>
+
+<div id="content">
+<h2>Problems</h2><div class="pagination"><a href="problems" title="Go to page 1">1</a><a href="problems%3Bpage=2" title="Go to page 2">2</a><a href="problems%3Bpage=3" title="Go to page 3">3</a><a href="problems%3Bpage=4" title="Go to page 4">4</a><a href="problems%3Bpage=5" title="Go to page 5">5</a><a href="problems%3Bpage=6" title="Go to page 6">6</a><a href="problems%3Bpage=7" title="Go to page 7">7</a><a href="problems%3Bpage=8" title="Go to page 8">8</a><a href="problems%3Bpage=9" class="current">9</a><a href="problems%3Bpage=10" title="Go to page 10">10</a><span>&nbsp;&nbsp;&nbsp;Go to Problem: <input type="text" id="jump_top" style="width:30px;" onkeypress="if (event.keyCode==13) location.href='problem='+this.value;" /></span></div><div style="clear:both;"></div><br />
+<table class="grid" style="width:800px">
+<tr><th style="width:40px;"><strong><span style="color:#000;text-decoration:underline;">ID</span></strong></th><th style="width:400px;"><b>Description / Title</b></th><th style="width:70px;"><strong>Solved By</th></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>401</b></div></td><td><a href="problem=401" style="text-decoration:none;" title="Published on Saturday, 10th November 2012, 04:00 pm">Sum of squares of divisors</a></td><td><div style="text-align:center;"><a href="fastest=401" title="View fastest solvers">929</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>402</b></div></td><td><a href="problem=402" style="text-decoration:none;" title="Published on Saturday, 17th November 2012, 07:00 pm">Integer-valued polynomials</a></td><td><div style="text-align:center;"><a href="fastest=402" title="View fastest solvers">216</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>403</b></div></td><td><a href="problem=403" style="text-decoration:none;" title="Published on Saturday, 24th November 2012, 10:00 pm">Lattice points enclosed by parabola and line</a></td><td><div style="text-align:center;"><a href="fastest=403" title="View fastest solvers">222</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>404</b></div></td><td><a href="problem=404" style="text-decoration:none;" title="Published on Sunday, 2nd December 2012, 01:00 am">Crisscross Ellipses</a></td><td><div style="text-align:center;"><a href="fastest=404" title="View fastest solvers">214</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>405</b></div></td><td><a href="problem=405" style="text-decoration:none;" title="Published on Sunday, 9th December 2012, 04:00 am">A rectangular tiling</a></td><td><div style="text-align:center;"><a href="fastest=405" title="View fastest solvers">310</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>406</b></div></td><td><a href="problem=406" style="text-decoration:none;" title="Published on Sunday, 16th December 2012, 07:00 am">Guessing Game</a></td><td><div style="text-align:center;"><a href="fastest=406" title="View fastest solvers">206</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>407</b></div></td><td><a href="problem=407" style="text-decoration:none;" title="Published on Sunday, 23rd December 2012, 10:00 am">Idempotents</a></td><td><div style="text-align:center;"><a href="fastest=407" title="View fastest solvers">716</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>408</b></div></td><td><a href="problem=408" style="text-decoration:none;" title="Published on Saturday, 29th December 2012, 01:00 pm">Admissible paths through a grid</a></td><td><div style="text-align:center;"><a href="fastest=408" title="View fastest solvers">306</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>409</b></div></td><td><a href="problem=409" style="text-decoration:none;" title="Published on Saturday, 5th January 2013, 04:00 pm">Nim Extreme</a></td><td><div style="text-align:center;"><a href="fastest=409" title="View fastest solvers">273</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>410</b></div></td><td><a href="problem=410" style="text-decoration:none;" title="Published on Saturday, 12th January 2013, 07:00 pm">Circle and tangent line</a></td><td><div style="text-align:center;"><a href="fastest=410" title="View fastest solvers">148</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>411</b></div></td><td><a href="problem=411" style="text-decoration:none;" title="Published on Saturday, 19th January 2013, 10:00 pm">Uphill paths</a></td><td><div style="text-align:center;"><a href="fastest=411" title="View fastest solvers">300</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>412</b></div></td><td><a href="problem=412" style="text-decoration:none;" title="Published on Sunday, 27th January 2013, 01:00 am">Gnomon numbering</a></td><td><div style="text-align:center;"><a href="fastest=412" title="View fastest solvers">236</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>413</b></div></td><td><a href="problem=413" style="text-decoration:none;" title="Published on Sunday, 3rd February 2013, 04:00 am">One-child Numbers</a></td><td><div style="text-align:center;"><a href="fastest=413" title="View fastest solvers">219</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>414</b></div></td><td><a href="problem=414" style="text-decoration:none;" title="Published on Sunday, 10th February 2013, 07:00 am">Kaprekar constant</a></td><td><div style="text-align:center;"><a href="fastest=414" title="View fastest solvers">165</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>415</b></div></td><td><a href="problem=415" style="text-decoration:none;" title="Published on Sunday, 17th February 2013, 10:00 am">Titanic sets</a></td><td><div style="text-align:center;"><a href="fastest=415" title="View fastest solvers">143</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>416</b></div></td><td><a href="problem=416" style="text-decoration:none;" title="Published on Saturday, 23rd February 2013, 01:00 pm">A frog's trip</a></td><td><div style="text-align:center;"><a href="fastest=416" title="View fastest solvers">150</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>417</b></div></td><td><a href="problem=417" style="text-decoration:none;" title="Published on Saturday, 2nd March 2013, 04:00 pm">Reciprocal cycles II</a></td><td><div style="text-align:center;"><a href="fastest=417" title="View fastest solvers">371</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>418</b></div></td><td><a href="problem=418" style="text-decoration:none;" title="Published on Saturday, 9th March 2013, 07:00 pm">Factorisation triples</a></td><td><div style="text-align:center;"><a href="fastest=418" title="View fastest solvers">342</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>419</b></div></td><td><a href="problem=419" style="text-decoration:none;" title="Published on Saturday, 16th March 2013, 10:00 pm">Look and say sequence</a></td><td><div style="text-align:center;"><a href="fastest=419" title="View fastest solvers">285</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>420</b></div></td><td><a href="problem=420" style="text-decoration:none;" title="Published on Sunday, 24th March 2013, 01:00 am">2x2 positive integer matrix</a></td><td><div style="text-align:center;"><a href="fastest=420" title="View fastest solvers">230</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>421</b></div></td><td><a href="problem=421" style="text-decoration:none;" title="Published on Sunday, 31st March 2013, 04:00 am">Prime factors of <var>n</var><sup>15</sup>+1</a></td><td><div style="text-align:center;"><a href="fastest=421" title="View fastest solvers">267</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>422</b></div></td><td><a href="problem=422" style="text-decoration:none;" title="Published on Sunday, 7th April 2013, 07:00 am">Sequence of points on a hyperbola</a></td><td><div style="text-align:center;"><a href="fastest=422" title="View fastest solvers">143</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>423</b></div></td><td><a href="problem=423" style="text-decoration:none;" title="Published on Sunday, 14th April 2013, 10:00 am">Consecutive die throws</a></td><td><div style="text-align:center;"><a href="fastest=423" title="View fastest solvers">198</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>424</b></div></td><td><a href="problem=424" style="text-decoration:none;" title="Published on Saturday, 20th April 2013, 01:00 pm">Kakuro</a></td><td><div style="text-align:center;"><a href="fastest=424" title="View fastest solvers">198</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>425</b></div></td><td><a href="problem=425" style="text-decoration:none;" title="Published on Saturday, 27th April 2013, 04:00 pm">Prime connection</a></td><td><div style="text-align:center;"><a href="fastest=425" title="View fastest solvers">548</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>426</b></div></td><td><a href="problem=426" style="text-decoration:none;" title="Published on Saturday, 4th May 2013, 07:00 pm">Box-ball system</a></td><td><div style="text-align:center;"><a href="fastest=426" title="View fastest solvers">143</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>427</b></div></td><td><a href="problem=427" style="text-decoration:none;" title="Published on Saturday, 11th May 2013, 10:00 pm">n-sequences</a></td><td><div style="text-align:center;"><a href="fastest=427" title="View fastest solvers">130</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>428</b></div></td><td><a href="problem=428" style="text-decoration:none;" title="Published on Sunday, 19th May 2013, 01:00 am">Necklace of circles</a></td><td><div style="text-align:center;"><a href="fastest=428" title="View fastest solvers">131</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>429</b></div></td><td><a href="problem=429" style="text-decoration:none;" title="Published on Sunday, 26th May 2013, 04:00 am">Sum of squares of unitary divisors</a></td><td><div style="text-align:center;"><a href="fastest=429" title="View fastest solvers">775</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>430</b></div></td><td><a href="problem=430" style="text-decoration:none;" title="Published on Sunday, 2nd June 2013, 07:00 am">Range flips</a></td><td><div style="text-align:center;"><a href="fastest=430" title="View fastest solvers">382</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>431</b></div></td><td><a href="problem=431" style="text-decoration:none;" title="Published on Sunday, 9th June 2013, 10:00 am">Square Space Silo</a></td><td><div style="text-align:center;"><a href="fastest=431" title="View fastest solvers">273</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>432</b></div></td><td><a href="problem=432" style="text-decoration:none;" title="Published on Saturday, 15th June 2013, 01:00 pm">Totient sum</a></td><td><div style="text-align:center;"><a href="fastest=432" title="View fastest solvers">177</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>433</b></div></td><td><a href="problem=433" style="text-decoration:none;" title="Published on Saturday, 22nd June 2013, 04:00 pm">Steps in Euclid's algorithm</a></td><td><div style="text-align:center;"><a href="fastest=433" title="View fastest solvers">224</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>434</b></div></td><td><a href="problem=434" style="text-decoration:none;" title="Published on Saturday, 29th June 2013, 07:00 pm">Rigid graphs</a></td><td><div style="text-align:center;"><a href="fastest=434" title="View fastest solvers">205</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>435</b></div></td><td><a href="problem=435" style="text-decoration:none;" title="Published on Saturday, 7th September 2013, 04:00 pm">Polynomials of Fibonacci numbers</a></td><td><div style="text-align:center;"><a href="fastest=435" title="View fastest solvers">330</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>436</b></div></td><td><a href="problem=436" style="text-decoration:none;" title="Published on Saturday, 14th September 2013, 07:00 pm">Unfair wager</a></td><td><div style="text-align:center;"><a href="fastest=436" title="View fastest solvers">213</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>437</b></div></td><td><a href="problem=437" style="text-decoration:none;" title="Published on Saturday, 21st September 2013, 10:00 pm">Fibonacci primitive roots</a></td><td><div style="text-align:center;"><a href="fastest=437" title="View fastest solvers">269</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>438</b></div></td><td><a href="problem=438" style="text-decoration:none;" title="Published on Sunday, 29th September 2013, 01:00 am">Integer part of polynomial equation's solutions</a></td><td><div style="text-align:center;"><a href="fastest=438" title="View fastest solvers">76</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>439</b></div></td><td><a href="problem=439" style="text-decoration:none;" title="Published on Sunday, 6th October 2013, 04:00 am">Sum of sum of divisors</a></td><td><div style="text-align:center;"><a href="fastest=439" title="View fastest solvers">60</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>440</b></div></td><td><a href="problem=440" style="text-decoration:none;" title="Published on Sunday, 13th October 2013, 07:00 am">GCD and Tiling</a></td><td><div style="text-align:center;"><a href="fastest=440" title="View fastest solvers">130</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>441</b></div></td><td><a href="problem=441" style="text-decoration:none;" title="Published on Sunday, 20th October 2013, 10:00 am">The inverse summation of coprime couples</a></td><td><div style="text-align:center;"><a href="fastest=441" title="View fastest solvers">149</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>442</b></div></td><td><a href="problem=442" style="text-decoration:none;" title="Published on Saturday, 26th October 2013, 01:00 pm">Eleven-free integers</a></td><td><div style="text-align:center;"><a href="fastest=442" title="View fastest solvers">165</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>443</b></div></td><td><a href="problem=443" style="text-decoration:none;" title="Published on Saturday, 2nd November 2013, 04:00 pm">GCD sequence</a></td><td><div style="text-align:center;"><a href="fastest=443" title="View fastest solvers">294</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>444</b></div></td><td><a href="problem=444" style="text-decoration:none;" title="Published on Saturday, 9th November 2013, 07:00 pm">The Roundtable Lottery</a></td><td><div style="text-align:center;"><a href="fastest=444" title="View fastest solvers">117</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>445</b></div></td><td><a href="problem=445" style="text-decoration:none;" title="Published on Saturday, 16th November 2013, 10:00 pm">Retractions A</a></td><td><div style="text-align:center;"><a href="fastest=445" title="View fastest solvers">126</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>446</b></div></td><td><a href="problem=446" style="text-decoration:none;" title="Published on Saturday, 16th November 2013, 10:00 pm">Retractions B</a></td><td><div style="text-align:center;"><a href="fastest=446" title="View fastest solvers">116</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>447</b></div></td><td><a href="problem=447" style="text-decoration:none;" title="Published on Saturday, 16th November 2013, 10:00 pm">Retractions C</a></td><td><div style="text-align:center;"><a href="fastest=447" title="View fastest solvers">68</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>448</b></div></td><td><a href="problem=448" style="text-decoration:none;" title="Published on Sunday, 24th November 2013, 01:00 am">Average least common multiple</a></td><td><div style="text-align:center;"><a href="fastest=448" title="View fastest solvers">90</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>449</b></div></td><td><a href="problem=449" style="text-decoration:none;" title="Published on Sunday, 8th December 2013, 04:00 am">Chocolate covered candy</a></td><td><div style="text-align:center;"><a href="fastest=449" title="View fastest solvers">259</a></div></td></tr>
+<tr><td style="height:30px;"><div style="text-align:center;"><b>450</b></div></td><td><a href="problem=450" style="text-decoration:none;" title="Published on Sunday, 15th December 2013, 07:00 am">Hypocycloid and Lattice points</a></td><td><div style="text-align:center;"><a href="fastest=450" title="View fastest solvers">42</a></div></td></tr>
+</table>
+<br /><div class="pagination"><a href="problems" title="Go to page 1">1</a><a href="problems%3Bpage=2" title="Go to page 2">2</a><a href="problems%3Bpage=3" title="Go to page 3">3</a><a href="problems%3Bpage=4" title="Go to page 4">4</a><a href="problems%3Bpage=5" title="Go to page 5">5</a><a href="problems%3Bpage=6" title="Go to page 6">6</a><a href="problems%3Bpage=7" title="Go to page 7">7</a><a href="problems%3Bpage=8" title="Go to page 8">8</a><a href="problems%3Bpage=9" class="current">9</a><a href="problems%3Bpage=10" title="Go to page 10">10</a><span>&nbsp;&nbsp;&nbsp;Go to Problem: <input type="text" id="jump_bottom" style="width:30px;" onkeypress="if (event.keyCode==13) location.href='problem='+this.value;" /></span></div><div style="clear:both;"></div><script type="text/javascript">
+function gotoPage(elem) {
+   page = elem.value;
+   page_str = ";page="+page;
+   if ( elem.value==1 ) page_str = "";
+   if ( page>0 && page<=10) location.href='problems'+page_str;
+}
+//document.getElementById('jump_top').focus();
+</script>
+</div>
+
+
+
+
+
+<div id="footer" class="noprint">
+<a href="copyright">Project Euler Copyright Information</a>
+<!--/Creative Commons License--><!-- <rdf:RDF xmlns="http://web.resource.org/cc/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#">
+   <Work rdf:about="">
+      <license rdf:resource="http://creativecommons.org/licenses/by-nc-sa/2.0/uk/" />
+   <dc:type rdf:resource="http://purl.org/dc/dcmitype/Text" />
+   </Work>
+   <License rdf:about="http://creativecommons.org/licenses/by-nc-sa/2.0/uk/"><permits rdf:resource="http://web.resource.org/cc/Reproduction"/><permits rdf:resource="http://web.resource.org/cc/Distribution"/><requires rdf:resource="http://web.resource.org/cc/Notice"/><requires rdf:resource="http://web.resource.org/cc/Attribution"/><prohibits rdf:resource="http://web.resource.org/cc/CommercialUse"/><permits rdf:resource="http://web.resource.org/cc/DerivativeWorks"/><requires rdf:resource="http://web.resource.org/cc/ShareAlike"/></License></rdf:RDF> -->
+</div>
+</div>
+<div style="height:1px;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; </div></body>
+</html>

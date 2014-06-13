@@ -9,6 +9,21 @@
 
 namespace utils {
 
+bool isTriangular(int n) {
+  double s = (-1.0 + sqrt(1 + 8*n)) / 2.0;
+  return s == int(s);
+}
+
+bool isPentagonal(int n) {
+  double s = (1.0 + sqrt(1 + 24*n)) / 6.0;
+  return s == int(s);
+}
+
+bool isHexagonal(int n) {
+  double s = (1.0 + sqrt(1 + 8*n)) / 4.0;
+  return s == int(s);
+}
+
 template <typename T>
 void swap(typename std::vector<T>* arr, size_t pos1, size_t pos2) {
   assert(pos1 < arr->size() && pos2 < arr->size());

@@ -14,25 +14,37 @@
 // Find the next triangle number that is also pentagonal and
 // hexagonal.
 //
-#include <stdio.h>
-#include "../utils.h"
+#include <boost/multiprecision/cpp_int.hpp>
+
 
 int main() {
-  int a = 166;
-  int r = 0;
-  bool notFound = true;
-  while (notFound) {
-    int pa = (3*a*a - a) / 2;
-    for (int b = a - 1; b > 0; --b) {
-      int hb = 2*b*b - b;
-      if (hb == pa && utils::isHexagonal(hb)) {
-        notFound = false;
-        r = b;
-      }
+    boost::multiprecision::cpp_int t = 0, p = 0, h = 1;
+    boost::multiprecision::cpp_int tn = 0, pn= 0, hn = 1;
+    int cnt = 0;
+
+    while (cnt < 3) {
+        while (p != h) {
+            if (p < h) {
+                pn += 1;
+                p = pn * (3 * pn - 1) / 2;
+            } else {
+                hn += 1;
+                h = hn * (2 * hn - 1);
+            }
+        }
+        while (t < p) {
+            tn += 1;
+            t = tn * (tn + 1) / 2;
+        }
+        if (t == p) {
+            std::cout << "T_" << tn << " = P_" << pn << " = H_" << hn << " = "
+                << t << std::endl;
+            cnt += 1;
+        }
+        pn += 1;
+        p = pn * (3 * pn - 1) / 2;
     }
-    ++a;
-  }
-  int result = 2*r*r - r;
-  printf("%d at pindex: %d, hindex: %d\n", result, a - 1, r);
-  return 0;
+
+    return 0;
 }
+

@@ -16,7 +16,17 @@
 // sequence?
 //
 
-#include <stdio.h>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+
+
+void print_vector(const std::vector<int>& v) {
+    for (auto x: v) {
+        std::cout << x << " ";
+    }
+    std::cout << std::endl;
+}
 
 
 bool is_prime(int x) {
@@ -30,15 +40,71 @@ bool is_prime(int x) {
 }
 
 
+void get_permutations(int x, std::vector<int>* result) {
+    // std::cout << "Permutations of " << x << std::endl;
+    std::vector<int> digits;
+    int mod;
+    while (1) {
+        if (x == 0) break;
+        mod = x % 10;
+        digits.push_back(mod);
+        x /= 10;
+    }
+    std::sort(digits.begin(), digits.end());
+
+    do {
+        int v = 0;
+        for (int i : digits) {
+            v *= 10;
+            v += i;
+        }
+        if (v < 1000) continue;
+        if (is_prime(v)) {
+            result->push_back(v);
+        }
+        // std::cout << "  " << v << std::endl;
+    } while (std::next_permutation(digits.begin(), digits.end()));
+}
+
+
+void find_three_equidistant_elements(
+        const std::vector<int>& numbers,
+        std::vector<std::vector<int> > *result
+) {
+    for (size_t i = 0; i < numbers.size() - 2; ++i) {
+        int dist_1 = 0;
+        int dist_2 = 0;
+        for (size_t j = i + 1; j < numbers.size() - 1; ++j) {
+            dist_1 = numbers[j] - numbers[i];
+            for (size_t k = j + 1; k < numbers.size(); ++k) {
+                dist_2 = numbers[k] - numbers[j];
+                if (dist_1 == dist_2) {
+                    std::vector<int> hit {numbers[i], numbers[j], numbers[k]};
+                    result->push_back(hit);
+                }
+            }
+        }
+    }
+}
+
+
 int main() {
-    // All primes from 1000 to 9999
     int primes[9000];
     int cnt = 0;
+    int seq_length = 3;
+    std::vector<std::vector<int> > result;
+
     for (int i = 1000; i <= 9999; ++i) {
-        if (is_prime(i)) {
-            printf("%d\n", i);
-            primes[cnt] = i;
-            cnt += 1;
+        std::vector<int> permutations;
+        get_permutations(i, &permutations);
+        if (permutations.size() < seq_length) {
+            continue;
+        }
+        find_three_equidistant_elements(permutations, &result);
+    }
+    if (result.size() != 0) {
+        for (auto x: result) {
+            print_vector(x);
         }
     }
 
